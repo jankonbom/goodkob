@@ -602,7 +602,7 @@
       articleCard.innerHTML = `
         <div class="product-image">
           ${isVideo ? `
-            <video class="product-video" autoplay muted loop playsinline webkit-playsinline>
+            <video class="product-video" autoplay muted loop playsinline webkit-playsinline controls="false" style="pointer-events: none;">
               <source src="${article.image_url}" type="video/mp4">
               Votre navigateur ne supporte pas la vidéo.
             </video>
@@ -643,22 +643,120 @@
     
     // Forcer la lecture des vidéos
     setTimeout(forcePlayAllVideos, 1000);
+    
+    // Ajouter un bouton de déblocage si nécessaire
+    addUnlockButton();
   }
 
   // Fonction pour forcer la lecture de toutes les vidéos
   function forcePlayAllVideos() {
     const videos = document.querySelectorAll('video');
     videos.forEach(video => {
+      // Supprimer les contrôles et forcer l'autoplay
+      video.controls = false;
+      video.style.pointerEvents = 'none';
+      
       if (video.paused) {
         video.play().catch(e => {
-          console.log('Impossible de lancer la vidéo:', e);
-          // Essayer de lancer après interaction utilisateur
-          document.addEventListener('click', () => {
-            video.play().catch(() => {});
-          }, { once: true });
+          console.log('Autoplay bloqué, tentative de déblocage...', e);
+          // Essayer plusieurs méthodes de déblocage
+          tryUnlockAutoplay(video);
         });
       }
     });
+  }
+
+  // Fonction pour débloquer l'autoplay
+  function tryUnlockAutoplay(video) {
+    // Méthode 1: Interaction utilisateur sur le document
+    const unlockOnInteraction = () => {
+      video.play().then(() => {
+        console.log('Vidéo lancée après interaction');
+        document.removeEventListener('click', unlockOnInteraction);
+        document.removeEventListener('touchstart', unlockOnInteraction);
+      }).catch(() => {});
+    };
+
+    document.addEventListener('click', unlockOnInteraction, { once: true });
+    document.addEventListener('touchstart', unlockOnInteraction, { once: true });
+
+    // Méthode 2: Essayer de lancer après un délai
+    setTimeout(() => {
+      video.play().catch(() => {});
+    }, 2000);
+
+    // Méthode 3: Essayer de lancer au scroll
+    const unlockOnScroll = () => {
+      video.play().then(() => {
+        console.log('Vidéo lancée au scroll');
+        window.removeEventListener('scroll', unlockOnScroll);
+      }).catch(() => {});
+    };
+    window.addEventListener('scroll', unlockOnScroll, { once: true });
+  }
+
+  // Fonction pour ajouter un bouton de déblocage
+  function addUnlockButton() {
+    // Vérifier si l'autoplay est bloqué
+    setTimeout(() => {
+      const videos = document.querySelectorAll('video');
+      const hasPausedVideos = Array.from(videos).some(video => video.paused);
+      
+      if (hasPausedVideos) {
+        // Créer le bouton de déblocage
+        const unlockBtn = document.createElement('div');
+        unlockBtn.id = 'unlockVideosBtn';
+        unlockBtn.innerHTML = '🎬 Appuyez pour lancer les vidéos';
+        unlockBtn.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+          color: white;
+          padding: 15px 25px;
+          border-radius: 25px;
+          font-weight: bold;
+          font-size: 16px;
+          cursor: pointer;
+          z-index: 10000;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+          animation: pulse 2s infinite;
+          border: none;
+          outline: none;
+        `;
+        
+        // Ajouter l'animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+          @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+          }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(unlockBtn);
+        
+        // Événement de clic sur le bouton
+        unlockBtn.addEventListener('click', () => {
+          videos.forEach(video => {
+            video.play().catch(() => {});
+          });
+          unlockBtn.remove();
+          style.remove();
+        });
+        
+        // Auto-supprimer après 10 secondes
+        setTimeout(() => {
+          if (unlockBtn.parentNode) {
+            unlockBtn.remove();
+            style.remove();
+          }
+        }, 10000);
+      }
+    }, 3000);
   }
 
   // Fonction pour normaliser l'affichage des images de produits
@@ -770,7 +868,7 @@
 
       if (isVideo) {
         modalImageElement.innerHTML = `
-          <video class="modal-video" autoplay muted loop playsinline webkit-playsinline>
+          <video class="modal-video" autoplay muted loop playsinline webkit-playsinline controls="false" style="pointer-events: none;">
             <source src="${article.image_url}" type="video/mp4">
             Votre navigateur ne supporte pas la vidéo.
           </video>
@@ -1515,6 +1613,16 @@
   
   // Initialiser le trigger admin caché
   setupAdminTrigger();
+  
+  // Forcer la lecture des vidéos dès le chargement
+  setTimeout(() => {
+    const videos = document.querySelectorAll('video');
+    videos.forEach(video => {
+      video.controls = false;
+      video.style.pointerEvents = 'none';
+      video.play().catch(() => {});
+    });
+  }, 500);
   
   console.log('DarkLabbb Shop - Interface chargée avec succès');
 })();
