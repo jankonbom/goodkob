@@ -799,6 +799,115 @@
     }
   }
 
+  // Fonction pour initialiser la page de chargement
+  function initializeLoadingPage() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const progressFill = document.getElementById('progressFill');
+    const loadingText = document.getElementById('loadingText');
+    const loadingClose = document.getElementById('loadingClose');
+    
+    if (!loadingOverlay) return;
+    
+    // Mode rapide pour GitHub Pages
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    const fastMode = isGitHubPages || window.innerWidth < 768; // Mobile ou GitHub Pages
+    
+    let progress = 0;
+    const totalSteps = fastMode ? 50 : 100; // Moins d'étapes en mode rapide
+    const stepDuration = fastMode ? 10 : 20; // Plus rapide en mode rapide
+    
+    // Messages de chargement
+    const loadingMessages = [
+      'Chargement...',
+      'Préparation des vidéos...',
+      'Optimisation mobile...',
+      'Chargement des produits...',
+      'Prêt !'
+    ];
+    
+    let messageIndex = 0;
+    
+    // Fonction pour mettre à jour la progression
+    function updateProgress() {
+      progress += 1;
+      progressFill.style.width = progress + '%';
+      
+      // Mettre à jour le message
+      const messageInterval = fastMode ? 12 : 25;
+      if (progress % messageInterval === 0 && messageIndex < loadingMessages.length - 1) {
+        messageIndex++;
+        loadingText.textContent = loadingMessages[messageIndex];
+      }
+      
+      if (progress < totalSteps) {
+        setTimeout(updateProgress, stepDuration);
+      } else {
+        // Chargement terminé
+        loadingText.textContent = loadingMessages[loadingMessages.length - 1];
+        
+        // Précharger toutes les vidéos
+        preloadAllVideos().then(() => {
+          // Attendre un peu avant de fermer
+          const waitTime = fastMode ? 200 : 500;
+          setTimeout(() => {
+            hideLoadingPage();
+          }, waitTime);
+        });
+      }
+    }
+    
+    // Fonction pour précharger toutes les vidéos
+    function preloadAllVideos() {
+      return new Promise((resolve) => {
+        const videos = document.querySelectorAll('video');
+        let loadedCount = 0;
+        
+        if (videos.length === 0) {
+          resolve();
+          return;
+        }
+        
+        videos.forEach(video => {
+          video.addEventListener('loadeddata', () => {
+            loadedCount++;
+            if (loadedCount === videos.length) {
+              resolve();
+            }
+          });
+          
+          // Forcer le chargement
+          video.load();
+        });
+        
+        // Timeout de sécurité adapté au mode
+        const timeout = fastMode ? 2000 : 3000;
+        setTimeout(resolve, timeout);
+      });
+    }
+    
+    // Fonction pour masquer la page de chargement
+    function hideLoadingPage() {
+      loadingOverlay.classList.add('fade-out');
+      setTimeout(() => {
+        loadingOverlay.style.display = 'none';
+        // Lancer les vidéos après fermeture
+        const videos = document.querySelectorAll('video');
+        videos.forEach(video => {
+          video.play().catch(() => {});
+        });
+      }, 500);
+    }
+    
+    // Bouton de fermeture
+    if (loadingClose) {
+      loadingClose.addEventListener('click', hideLoadingPage);
+    }
+    
+    // Démarrer le chargement plus rapidement
+    const startDelay = fastMode ? 100 : 200;
+    setTimeout(updateProgress, startDelay);
+  }
+
   // Fonction pour normaliser l'affichage des images de produits
   function normalizeProductImages() {
     const images = document.querySelectorAll('.product-img');
@@ -1685,6 +1794,9 @@
   
   // Initialiser les corrections GitHub Pages
   setupGitHubPagesVideoFix();
+  
+  // Initialiser la page de chargement
+  initializeLoadingPage();
   
   console.log('DarkLabbb Shop - Interface chargée avec succès');
 })();
