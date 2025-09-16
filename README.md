@@ -1,3 +1,4 @@
+# 🛒 DarkLabbb Shop
 
 Site e-commerce avec panel admin et messages de commande personnalisés.
 
