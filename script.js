@@ -602,7 +602,7 @@
       articleCard.innerHTML = `
         <div class="product-image">
           ${isVideo ? `
-            <video class="product-video" autoplay muted loop playsinline webkit-playsinline controls="false" style="pointer-events: none;">
+            <video class="product-video" autoplay muted loop playsinline webkit-playsinline preload="auto" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; pointer-events: none;">
               <source src="${article.image_url}" type="video/mp4">
               Votre navigateur ne supporte pas la vidéo.
             </video>
@@ -759,6 +759,46 @@
     }, 3000);
   }
 
+  // Fonction spécifique pour GitHub Pages
+  function setupGitHubPagesVideoFix() {
+    // Détecter si on est sur GitHub Pages
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    
+    if (isGitHubPages) {
+      console.log('GitHub Pages détecté - Application des corrections vidéo');
+      
+      // Ajouter un bouton de déblocage permanent
+      const permanentUnlockBtn = document.createElement('div');
+      permanentUnlockBtn.id = 'githubUnlockBtn';
+      permanentUnlockBtn.innerHTML = '🎬 Lancer les vidéos';
+      permanentUnlockBtn.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ff6b6b;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+        cursor: pointer;
+        z-index: 10001;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        border: none;
+        outline: none;
+      `;
+      
+      document.body.appendChild(permanentUnlockBtn);
+      
+      permanentUnlockBtn.addEventListener('click', () => {
+        const videos = document.querySelectorAll('video');
+        videos.forEach(video => {
+          video.play().catch(() => {});
+        });
+        permanentUnlockBtn.style.display = 'none';
+      });
+    }
+  }
+
   // Fonction pour normaliser l'affichage des images de produits
   function normalizeProductImages() {
     const images = document.querySelectorAll('.product-img');
@@ -835,6 +875,14 @@
     // Ouvrir le modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+    
+    // Forcer la lecture des vidéos dans le modal après ouverture
+    setTimeout(() => {
+      const modalVideos = modal.querySelectorAll('video');
+      modalVideos.forEach(video => {
+        video.play().catch(() => {});
+      });
+    }, 500);
   }
 
   // Fonction pour mettre à jour le contenu du modal avec les données de l'article
@@ -868,7 +916,7 @@
 
       if (isVideo) {
         modalImageElement.innerHTML = `
-          <video class="modal-video" autoplay muted loop playsinline webkit-playsinline controls="false" style="pointer-events: none;">
+          <video class="modal-video" autoplay muted loop playsinline webkit-playsinline preload="auto" style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px 20px 0 0; pointer-events: none;">
             <source src="${article.image_url}" type="video/mp4">
             Votre navigateur ne supporte pas la vidéo.
           </video>
@@ -877,9 +925,20 @@
         // Forcer la lecture de la vidéo dans le modal
         const modalVideo = modalImageElement.querySelector('.modal-video');
         if (modalVideo) {
+          // Forcer les dimensions pour mobile
+          modalVideo.style.width = '100%';
+          modalVideo.style.height = '100%';
+          modalVideo.style.objectFit = 'cover';
+          modalVideo.style.borderRadius = '20px 20px 0 0';
+          
           modalVideo.addEventListener('loadeddata', () => {
             modalVideo.play().catch(e => console.log('Autoplay modal bloqué:', e));
           });
+          
+          // Essayer de lancer immédiatement
+          setTimeout(() => {
+            modalVideo.play().catch(() => {});
+          }, 100);
         }
       } else {
         modalImageElement.innerHTML = `
@@ -1623,6 +1682,9 @@
       video.play().catch(() => {});
     });
   }, 500);
+  
+  // Initialiser les corrections GitHub Pages
+  setupGitHubPagesVideoFix();
   
   console.log('DarkLabbb Shop - Interface chargée avec succès');
 })();
