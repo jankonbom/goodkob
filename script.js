@@ -602,7 +602,7 @@
       articleCard.innerHTML = `
         <div class="product-image">
           ${isVideo ? `
-            <video class="product-video" autoplay muted loop>
+            <video class="product-video" autoplay muted loop playsinline webkit-playsinline>
               <source src="${article.image_url}" type="video/mp4">
               Votre navigateur ne supporte pas la vidéo.
             </video>
@@ -622,6 +622,16 @@
         openProductModal(article);
       });
 
+      // Forcer la lecture des vidéos si nécessaire
+      if (isVideo) {
+        const video = articleCard.querySelector('.product-video');
+        if (video) {
+          video.addEventListener('loadeddata', () => {
+            video.play().catch(e => console.log('Autoplay bloqué:', e));
+          });
+        }
+      }
+
       productsGrid.appendChild(articleCard);
     });
 
@@ -630,6 +640,25 @@
     
     // Normaliser l'affichage des images
     normalizeProductImages();
+    
+    // Forcer la lecture des vidéos
+    setTimeout(forcePlayAllVideos, 1000);
+  }
+
+  // Fonction pour forcer la lecture de toutes les vidéos
+  function forcePlayAllVideos() {
+    const videos = document.querySelectorAll('video');
+    videos.forEach(video => {
+      if (video.paused) {
+        video.play().catch(e => {
+          console.log('Impossible de lancer la vidéo:', e);
+          // Essayer de lancer après interaction utilisateur
+          document.addEventListener('click', () => {
+            video.play().catch(() => {});
+          }, { once: true });
+        });
+      }
+    });
   }
 
   // Fonction pour normaliser l'affichage des images de produits
@@ -741,11 +770,19 @@
 
       if (isVideo) {
         modalImageElement.innerHTML = `
-          <video class="modal-video" autoplay muted loop>
+          <video class="modal-video" autoplay muted loop playsinline webkit-playsinline>
             <source src="${article.image_url}" type="video/mp4">
             Votre navigateur ne supporte pas la vidéo.
           </video>
         `;
+        
+        // Forcer la lecture de la vidéo dans le modal
+        const modalVideo = modalImageElement.querySelector('.modal-video');
+        if (modalVideo) {
+          modalVideo.addEventListener('loadeddata', () => {
+            modalVideo.play().catch(e => console.log('Autoplay modal bloqué:', e));
+          });
+        }
       } else {
         modalImageElement.innerHTML = `
           <img src="${article.image_url}" alt="${article.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px 20px 0 0;">
