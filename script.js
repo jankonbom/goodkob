@@ -644,8 +644,7 @@
     // Forcer la lecture des vidéos
     setTimeout(forcePlayAllVideos, 1000);
     
-    // Ajouter un bouton de déblocage si nécessaire
-    addUnlockButton();
+    // Plus de boutons de déblocage
   }
 
   // Fonction pour forcer la lecture de toutes les vidéos
@@ -695,107 +694,15 @@
     window.addEventListener('scroll', unlockOnScroll, { once: true });
   }
 
-  // Fonction pour ajouter un bouton de déblocage
-  function addUnlockButton() {
-    // Vérifier si l'autoplay est bloqué
-    setTimeout(() => {
-      const videos = document.querySelectorAll('video');
-      const hasPausedVideos = Array.from(videos).some(video => video.paused);
-      
-      if (hasPausedVideos) {
-        // Créer le bouton de déblocage
-        const unlockBtn = document.createElement('div');
-        unlockBtn.id = 'unlockVideosBtn';
-        unlockBtn.innerHTML = '🎬 Appuyez pour lancer les vidéos';
-        unlockBtn.style.cssText = `
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-          color: white;
-          padding: 15px 25px;
-          border-radius: 25px;
-          font-weight: bold;
-          font-size: 16px;
-          cursor: pointer;
-          z-index: 10000;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-          animation: pulse 2s infinite;
-          border: none;
-          outline: none;
-        `;
-        
-        // Ajouter l'animation CSS
-        const style = document.createElement('style');
-        style.textContent = `
-          @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { transform: translate(-50%, -50%) scale(1); }
-          }
-        `;
-        document.head.appendChild(style);
-        
-        document.body.appendChild(unlockBtn);
-        
-        // Événement de clic sur le bouton
-        unlockBtn.addEventListener('click', () => {
-          videos.forEach(video => {
-            video.play().catch(() => {});
-          });
-          unlockBtn.remove();
-          style.remove();
-        });
-        
-        // Auto-supprimer après 10 secondes
-        setTimeout(() => {
-          if (unlockBtn.parentNode) {
-            unlockBtn.remove();
-            style.remove();
-          }
-        }, 10000);
-      }
-    }, 3000);
-  }
+  // Fonction supprimée - plus de boutons de déblocage
 
-  // Fonction spécifique pour GitHub Pages
+  // Fonction spécifique pour GitHub Pages - Simplifiée
   function setupGitHubPagesVideoFix() {
     // Détecter si on est sur GitHub Pages
     const isGitHubPages = window.location.hostname.includes('github.io');
     
     if (isGitHubPages) {
-      console.log('GitHub Pages détecté - Application des corrections vidéo');
-      
-      // Ajouter un bouton de déblocage permanent
-      const permanentUnlockBtn = document.createElement('div');
-      permanentUnlockBtn.id = 'githubUnlockBtn';
-      permanentUnlockBtn.innerHTML = '🎬 Lancer les vidéos';
-      permanentUnlockBtn.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #ff6b6b;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 20px;
-        font-size: 14px;
-        cursor: pointer;
-        z-index: 10001;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        border: none;
-        outline: none;
-      `;
-      
-      document.body.appendChild(permanentUnlockBtn);
-      
-      permanentUnlockBtn.addEventListener('click', () => {
-        const videos = document.querySelectorAll('video');
-        videos.forEach(video => {
-          video.play().catch(() => {});
-        });
-        permanentUnlockBtn.style.display = 'none';
-      });
+      console.log('GitHub Pages détecté - Mode optimisé activé');
     }
   }
 
@@ -806,11 +713,20 @@
     const loadingText = document.getElementById('loadingText');
     const loadingClose = document.getElementById('loadingClose');
     
-    if (!loadingOverlay) return;
+    if (!loadingOverlay) {
+      console.log('Page de chargement non trouvée');
+      return;
+    }
+    
+    // S'assurer que la page de chargement est visible
+    loadingOverlay.style.display = 'flex';
+    loadingOverlay.style.zIndex = '10000';
     
     // Mode rapide pour GitHub Pages
     const isGitHubPages = window.location.hostname.includes('github.io');
     const fastMode = isGitHubPages || window.innerWidth < 768; // Mobile ou GitHub Pages
+    
+    console.log('Page de chargement initialisée - Mode rapide:', fastMode);
     
     let progress = 0;
     const totalSteps = fastMode ? 50 : 100; // Moins d'étapes en mode rapide
@@ -868,8 +784,19 @@
         }
         
         videos.forEach(video => {
+          // Forcer les attributs pour l'autoplay
+          video.setAttribute('autoplay', 'true');
+          video.setAttribute('muted', 'true');
+          video.setAttribute('loop', 'true');
+          video.setAttribute('playsinline', 'true');
+          video.setAttribute('webkit-playsinline', 'true');
+          video.controls = false;
+          video.style.pointerEvents = 'none';
+          
           video.addEventListener('loadeddata', () => {
             loadedCount++;
+            // Essayer de lancer immédiatement
+            video.play().catch(() => {});
             if (loadedCount === videos.length) {
               resolve();
             }
@@ -877,6 +804,11 @@
           
           // Forcer le chargement
           video.load();
+          
+          // Essayer de lancer immédiatement après chargement
+          video.addEventListener('canplay', () => {
+            video.play().catch(() => {});
+          });
         });
         
         // Timeout de sécurité adapté au mode
@@ -1795,8 +1727,21 @@
   // Initialiser les corrections GitHub Pages
   setupGitHubPagesVideoFix();
   
-  // Initialiser la page de chargement
-  initializeLoadingPage();
+  // Initialiser la page de chargement immédiatement
+  setTimeout(() => {
+    initializeLoadingPage();
+  }, 100);
+  
+  // Initialisation de secours pour mobile
+  if (window.innerWidth < 768) {
+    setTimeout(() => {
+      const loadingOverlay = document.getElementById('loadingOverlay');
+      if (loadingOverlay) {
+        loadingOverlay.style.display = 'flex';
+        loadingOverlay.style.zIndex = '10000';
+      }
+    }, 50);
+  }
   
   console.log('DarkLabbb Shop - Interface chargée avec succès');
 })();
