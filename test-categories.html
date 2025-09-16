@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Catégories - Articles</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .category-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #2a2a2a;
+        }
+        .article {
+            border: 1px solid #444;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #3a3a3a;
+        }
+        .error {
+            color: #ff6b6b;
+            background: #3a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #4ade80;
+            background: #1a3a1a;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        button {
+            background: #58a6ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #79c0ff;
+        }
+        .filter-buttons {
+            margin: 20px 0;
+        }
+        .filter-btn {
+            background: #333;
+            margin: 5px;
+        }
+        .filter-btn.active {
+            background: #58a6ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test des Catégories d'Articles</h1>
+    
+    <div class="filter-buttons">
+        <button class="filter-btn" onclick="filterByCategory('all')">Tous</button>
+        <button class="filter-btn" onclick="filterByCategory('bedave')">BEDAVE</button>
+        <button class="filter-btn" onclick="filterByCategory('tabac')">TABAC</button>
+        <button class="filter-btn" onclick="filterByCategory('puffs')">PUFFS</button>
+        <button class="filter-btn" onclick="filterByCategory('stup')">STUP</button>
+    </div>
+    
+    <div id="status"></div>
+    <div id="articles"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://aapicehoqxdwixbiqucs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhcGljZWhvcXhkd2l4YmlxdWNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0MzE5ODMsImV4cCI6MjA3MzAwNzk4M30.jBTeUfGBkVT0-5ElCD1NM6fCQCD7wnRpw4I2ulykLOQ';
+
+        let allArticles = [];
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        async function loadAllArticles() {
+            showStatus('🔄 Chargement de tous les articles...', 'info');
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&status=eq.active`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+
+                allArticles = await response.json();
+                showStatus(`✅ ${allArticles.length} articles chargés avec succès !`, 'success');
+                
+                // Grouper par catégorie
+                const categories = {};
+                allArticles.forEach(article => {
+                    if (!categories[article.category]) {
+                        categories[article.category] = [];
+                    }
+                    categories[article.category].push(article);
+                });
+
+                // Afficher le résumé
+                let summary = '<h3>📊 Résumé par catégorie :</h3>';
+                Object.keys(categories).forEach(category => {
+                    summary += `<p><strong>${category.toUpperCase()}:</strong> ${categories[category].length} articles</p>`;
+                });
+                summary += '<hr>';
+                document.getElementById('status').innerHTML += summary;
+                
+                displayArticles(allArticles);
+            } catch (error) {
+                showStatus(`❌ Erreur lors du chargement: ${error.message}`, 'error');
+            }
+        }
+
+        function filterByCategory(category) {
+            // Mettre à jour les boutons actifs
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (category === 'all') {
+                displayArticles(allArticles);
+            } else {
+                const filteredArticles = allArticles.filter(article => article.category === category);
+                displayArticles(filteredArticles);
+            }
+        }
+
+        function displayArticles(articles) {
+            const container = document.getElementById('articles');
+            
+            if (articles.length === 0) {
+                container.innerHTML = '<div class="error">Aucun article trouvé pour cette catégorie.</div>';
+                return;
+            }
+
+            // Grouper par catégorie
+            const categories = {};
+            articles.forEach(article => {
+                if (!categories[article.category]) {
+                    categories[article.category] = [];
+                }
+                categories[article.category].push(article);
+            });
+
+            let html = '';
+            Object.keys(categories).forEach(category => {
+                html += `<div class="category-section">
+                    <h3>${category.toUpperCase()} (${categories[category].length} articles)</h3>
+                `;
+                
+                categories[category].forEach(article => {
+                    html += `
+                        <div class="article">
+                            <h4>${article.name}</h4>
+                            <p><strong>Prix:</strong> ${article.price}€</p>
+                            <p><strong>Stock:</strong> ${article.stock}</p>
+                            <p><strong>Description:</strong> ${article.description || 'Aucune description'}</p>
+                            <p><strong>Image:</strong> ${article.image_url ? '✅' : '❌'}</p>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Charger les articles au démarrage
+        window.addEventListener('load', () => {
+            loadAllArticles();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+

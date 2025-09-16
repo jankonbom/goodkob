@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Musique - Test Simple</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .debug-container {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .debug-button {
+            background: linear-gradient(135deg, #58a6ff, #79c0ff);
+            border: none;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 20px auto;
+            font-size: 40px;
+            box-shadow: 0 6px 20px rgba(88, 166, 255, 0.4);
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+            transition: all 0.3s ease;
+        }
+        
+        .debug-button:active {
+            transform: scale(0.95);
+        }
+        
+        .debug-button.playing {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .status-panel {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .log-panel {
+            background: #000;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .test-btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .test-btn:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🔧 Debug Musique</h1>
+        
+        <div class="status-panel">
+            <h3>État de la musique :</h3>
+            <div>Statut: <span id="status">Arrêté</span></div>
+            <div>Volume: <span id="volume">50%</span></div>
+            <div>Durée: <span id="duration">0s</span></div>
+            <div>Position: <span id="position">0s</span></div>
+        </div>
+        
+        <button class="debug-button" id="mainButton">
+            <span id="buttonIcon">🔊</span>
+        </button>
+        
+        <div class="test-buttons">
+            <button class="test-btn" onclick="testPlay()">Test Play</button>
+            <button class="test-btn" onclick="testPause()">Test Pause</button>
+            <button class="test-btn" onclick="testToggle()">Test Toggle</button>
+            <button class="test-btn" onclick="clearLog()">Effacer Log</button>
+        </div>
+        
+        <div class="log-panel" id="logPanel">
+            <div>Logs de débogage :</div>
+        </div>
+    </div>
+
+    <!-- Élément audio de test -->
+    <audio id="debugAudio" loop preload="auto">
+        <source src="music/music.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'élément audio.
+    </audio>
+
+    <script>
+        let debugAudio = null;
+        let isPlaying = false;
+        let touchStartTime = 0;
+        
+        function log(message) {
+            const logPanel = document.getElementById('logPanel');
+            const time = new Date().toLocaleTimeString();
+            logPanel.innerHTML += `<div>[${time}] ${message}</div>`;
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('logPanel').innerHTML = '<div>Logs de débogage :</div>';
+        }
+        
+        function updateStatus() {
+            if (!debugAudio) return;
+            
+            document.getElementById('status').textContent = isPlaying ? 'En cours' : 'Arrêté';
+            document.getElementById('volume').textContent = Math.round(debugAudio.volume * 100) + '%';
+            document.getElementById('duration').textContent = Math.round(debugAudio.duration || 0) + 's';
+            document.getElementById('position').textContent = Math.round(debugAudio.currentTime || 0) + 's';
+            
+            const icon = document.getElementById('buttonIcon');
+            const button = document.getElementById('mainButton');
+            
+            if (isPlaying) {
+                icon.textContent = '🔊';
+                button.classList.add('playing');
+            } else {
+                icon.textContent = '🔇';
+                button.classList.remove('playing');
+            }
+        }
+        
+        function playMusic() {
+            if (!debugAudio) {
+                debugAudio = document.getElementById('debugAudio');
+                debugAudio.volume = 0.5;
+            }
+            
+            log('🎵 Tentative de lecture...');
+            const playPromise = debugAudio.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isPlaying = true;
+                    log('✅ Musique démarrée');
+                    updateStatus();
+                }).catch(error => {
+                    log('❌ Erreur play: ' + error.message);
+                });
+            }
+        }
+        
+        function pauseMusic() {
+            if (!debugAudio) return;
+            
+            log('🎵 Tentative de pause...');
+            debugAudio.pause();
+            isPlaying = false;
+            log('✅ Musique mise en pause');
+            updateStatus();
+        }
+        
+        function toggleMusic() {
+            log('🎵 Toggle appelé - isPlaying: ' + isPlaying);
+            
+            if (isPlaying) {
+                pauseMusic();
+            } else {
+                playMusic();
+            }
+        }
+        
+        function testPlay() {
+            log('🧪 Test Play forcé');
+            playMusic();
+        }
+        
+        function testPause() {
+            log('🧪 Test Pause forcé');
+            pauseMusic();
+        }
+        
+        function testToggle() {
+            log('🧪 Test Toggle forcé');
+            toggleMusic();
+        }
+        
+        function initDebug() {
+            const button = document.getElementById('mainButton');
+            
+            // Touch events
+            button.addEventListener('touchstart', (e) => {
+                touchStartTime = Date.now();
+                log('👆 Touch start');
+            }, { passive: true });
+            
+            button.addEventListener('touchend', (e) => {
+                const touchDuration = Date.now() - touchStartTime;
+                log('👆 Touch end - Durée: ' + touchDuration + 'ms');
+                
+                if (touchDuration < 500) {
+                    log('👆 Tap court - toggle');
+                    toggleMusic();
+                }
+            }, { passive: true });
+            
+            // Click event
+            button.addEventListener('click', (e) => {
+                log('🖱️ Click - toggle');
+                toggleMusic();
+            });
+            
+            // Audio events
+            debugAudio = document.getElementById('debugAudio');
+            debugAudio.addEventListener('play', () => {
+                log('🎵 Événement play détecté');
+                isPlaying = true;
+                updateStatus();
+            });
+            
+            debugAudio.addEventListener('pause', () => {
+                log('🎵 Événement pause détecté');
+                isPlaying = false;
+                updateStatus();
+            });
+            
+            debugAudio.addEventListener('error', (e) => {
+                log('❌ Erreur audio: ' + e.message);
+            });
+            
+            log('✅ Debug initialisé');
+            updateStatus();
+        }
+        
+        // Initialiser au chargement
+        window.addEventListener('load', initDebug);
+    </script>
+</body>
+</html>

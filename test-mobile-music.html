@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Mobile - Contrôleur de Musique</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #58a6ff, #79c0ff);
+            border: none;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin: 20px auto;
+            font-size: 30px;
+            box-shadow: 0 6px 20px rgba(88, 166, 255, 0.4);
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:active {
+            transform: scale(0.95);
+        }
+        
+        .test-button.playing {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .status {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        
+        .instructions {
+            background: #333;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .log {
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 12px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Mobile - Musique</h1>
+        
+        <div class="instructions">
+            <h3>Instructions :</h3>
+            <p>1. Touchez le bouton pour play/pause</p>
+            <p>2. Regardez les logs ci-dessous</p>
+            <p>3. Vérifiez que la musique se lance/coupe</p>
+        </div>
+        
+        <button class="test-button" id="testMusicBtn">
+            <span id="musicIcon">🔊</span>
+        </button>
+        
+        <div class="status">
+            <div>État: <span id="musicStatus">Arrêté</span></div>
+            <div>Volume: <span id="volumeStatus">50%</span></div>
+        </div>
+        
+        <div class="log" id="logContainer">
+            <div>Logs d'événements :</div>
+        </div>
+        
+        <button onclick="clearLogs()" style="background: #333; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 10px;">
+            Effacer les logs
+        </button>
+    </div>
+
+    <!-- Élément audio de test -->
+    <audio id="testAudio" loop preload="auto">
+        <source src="music/music.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'élément audio.
+    </audio>
+
+    <script>
+        let testAudio = null;
+        let isPlaying = false;
+        let isTouching = false;
+        
+        function log(message) {
+            const logContainer = document.getElementById('logContainer');
+            const time = new Date().toLocaleTimeString();
+            logContainer.innerHTML += `<div>[${time}] ${message}</div>`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '<div>Logs d\'événements :</div>';
+        }
+        
+        function updateStatus() {
+            document.getElementById('musicStatus').textContent = isPlaying ? 'En cours' : 'Arrêté';
+            document.getElementById('volumeStatus').textContent = Math.round((testAudio?.volume || 0) * 100) + '%';
+            
+            const icon = document.getElementById('musicIcon');
+            const button = document.getElementById('testMusicBtn');
+            
+            if (isPlaying) {
+                icon.textContent = '🔊';
+                button.classList.add('playing');
+            } else {
+                icon.textContent = '🔇';
+                button.classList.remove('playing');
+            }
+        }
+        
+        function toggleMusic() {
+            if (!testAudio) {
+                testAudio = document.getElementById('testAudio');
+                testAudio.volume = 0.5;
+            }
+            
+            if (isPlaying) {
+                testAudio.pause();
+                isPlaying = false;
+                log('🔇 Musique mise en pause');
+            } else {
+                const playPromise = testAudio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isPlaying = true;
+                        log('🔊 Musique démarrée');
+                        updateStatus();
+                    }).catch(error => {
+                        log('❌ Erreur: ' + error.message);
+                    });
+                }
+            }
+            
+            updateStatus();
+        }
+        
+        function initTest() {
+            const button = document.getElementById('testMusicBtn');
+            
+            // Événements tactiles
+            button.addEventListener('touchstart', (e) => {
+                isTouching = true;
+                log('👆 Touch start');
+            }, { passive: true });
+            
+            button.addEventListener('touchend', (e) => {
+                if (isTouching) {
+                    log('👆 Touch end - toggle musique');
+                    toggleMusic();
+                    isTouching = false;
+                }
+            }, { passive: true });
+            
+            // Événement click (desktop)
+            button.addEventListener('click', (e) => {
+                if (!isTouching) {
+                    log('🖱️ Clic - toggle musique');
+                    toggleMusic();
+                }
+            });
+            
+            log('✅ Test initialisé');
+            updateStatus();
+        }
+        
+        // Initialiser au chargement
+        window.addEventListener('load', initTest);
+    </script>
+</body>
+</html>
+
+
+
+
+

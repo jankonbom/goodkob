@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>DarkLabbb — Shop</title>
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DarkLabbb Shop">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="music-controls.css" />
+  
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- En-tête principal -->
+  <header class="main-header">
+    <div class="header-center">
+      <img src="https://i.imgur.com/2T05Hat.jpeg" alt="Logo" class="header-logo">
+    </div>
+    <div class="header-right">
+      <button class="header-btn" aria-label="Panier">
+        <span class="icon">🛒</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Bannière de qualité -->
+  <div class="quality-banner">
+    <span class="rocket-icon">🚀</span>
+    <span class="banner-text">RAPPORT QUALITE PRIX - Commandes sécurisées 24/7 - Livraisons rapides</span>
+  </div>
+
+  <!-- Barres de filtres -->
+  <div class="filters-section" id="filtersSection">
+    <div class="filter-bar" data-category="stup">
+      <div class="filter-icon stup">🌿</div>
+      <div class="filter-title">STUP</div>
+    </div>
+    
+    <div class="filter-bar" data-category="tabac">
+      <div class="filter-icon tabac">🚬</div>
+      <div class="filter-title">TABAC</div>
+    </div>
+    
+    <div class="filter-bar" data-category="puffs">
+      <div class="filter-icon puffs">💨</div>
+      <div class="filter-title">PUFFS</div>
+    </div>
+  </div>
+
+  <!-- Page d'informations -->
+  <main class="info-section" id="infoSection" style="display: none;">
+    <div class="info-content">
+      <h1 class="info-title">Informations</h1>
+      
+      <div id="infoContainer">
+        <!-- Les informations seront chargées dynamiquement ici -->
+        <div class="loading-info">
+          <p>Chargement des informations...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Page de contact -->
+  <main class="contact-section" id="contactSection" style="display: none;">
+    <div class="contact-content">
+      <h1 class="contact-title">Contact</h1>
+      <p class="contact-subtitle">Pour toute commande ou question, contactez-nous via nos réseaux sécurisés.</p>
+      
+      <div class="contact-buttons">
+        <a href="https://www.snapchat.com/add/bsst6259?share_id=Yh4Picxsxrw&locale=fr-FR" target="_blank" class="contact-btn">
+          <span class="btn-icon">
+            <img src="https://i.imgur.com/oBiTzEX.png" alt="Snapchat" class="snapchat-logo">
+          </span>
+          <span class="btn-text">Snapchat</span>
+        </a>
+        
+        <a href="https://www.snapchat.com/add/bsst2025?share_id=2W1a8b7bDS0&locale=fr-FR" target="_blank" class="contact-btn">
+          <span class="btn-icon">
+            <img src="https://i.imgur.com/oBiTzEX.png" alt="Snapchat" class="snapchat-logo">
+          </span>
+          <span class="btn-text">Snapchat</span>
+          <span class="btn-description">Compte secours</span>
+        </a>
+        
+        <a href="https://www.instagram.com/califastdrive/" target="_blank" class="contact-btn">
+          <span class="btn-icon">
+            <svg class="instagram-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="url(#instagram-gradient)"/>
+              <defs>
+                <linearGradient id="instagram-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#f09433;stop-opacity:1" />
+                  <stop offset="25%" style="stop-color:#e6683c;stop-opacity:1" />
+                  <stop offset="50%" style="stop-color:#dc2743;stop-opacity:1" />
+                  <stop offset="75%" style="stop-color:#cc2366;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#bc1888;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </span>
+          <span class="btn-text">Instagram</span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Grille de produits -->
+  <main class="products-section" id="productsSection">
+    <div class="products-grid">
+      <!-- Les articles seront chargés dynamiquement depuis Supabase -->
+    </div>
+  </main>
+
+  <!-- Navigation en bas -->
+  <nav class="bottom-navigation">
+    <button class="nav-item active">
+      <div class="nav-icon">⊞</div>
+      <div class="nav-text">Menu</div>
+    </button>
+    <button class="nav-item">
+      <div class="nav-icon">ⓘ</div>
+      <div class="nav-text">Infos</div>
+    </button>
+    <button class="nav-item">
+      <div class="nav-icon">👤</div>
+      <div class="nav-text">Contact</div>
+    </button>
+  </nav>
+
+  <!-- Footer -->
+  <div class="footer">
+  </div>
+
+  <!-- Modal de commande -->
+  <div class="order-modal" id="orderModal">
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose">✕</button>
+      
+      <div class="modal-product-image">
+        <!-- Le contenu sera chargé dynamiquement -->
+      </div>
+      
+      <div class="modal-product-info">
+        <h2 class="modal-title">Chargement...</h2>
+        <p class="modal-description">Chargement...</p>
+        
+        <div class="pricing-section">
+          <h3>Tarifs disponibles :</h3>
+          <div class="pricing-options">
+            <!-- Les tarifs seront chargés dynamiquement -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panier -->
+  <div class="cart-modal" id="cartModal">
+    <div class="cart-content">
+      <div class="cart-header">
+        <h2 class="cart-title">Mon Panier</h2>
+        <div class="cart-badge" id="cartBadge">0 article</div>
+        <button class="cart-close" id="cartClose">✕</button>
+      </div>
+      
+      <div class="cart-body" id="cartBody">
+        <div class="cart-empty">
+          <p>Votre panier est vide.</p>
+        </div>
+      </div>
+      
+      <!-- Section de livraison -->
+      <div class="delivery-section" id="deliverySection" style="display: none;">
+        <h3 class="delivery-title">Choisir la livraison</h3>
+        <div class="delivery-options">
+          <label class="delivery-option">
+            <input type="radio" name="delivery" value="livraison" data-fee="10">
+            <div class="delivery-card">
+              <div class="delivery-name">Livraison</div>
+              <div class="delivery-fee">Frais 10€</div>
+            </div>
+          </label>
+          
+          <label class="delivery-option">
+            <input type="radio" name="delivery" value="meetup" data-fee="0">
+            <div class="delivery-card">
+              <div class="delivery-name">Meet up</div>
+              <div class="delivery-fee">Aucun frais</div>
+            </div>
+          </label>
+          
+          <label class="delivery-option">
+            <input type="radio" name="delivery" value="mondial-relay" data-fee="10">
+            <div class="delivery-card">
+              <div class="delivery-name">Mondial Relay</div>
+              <div class="delivery-fee">Frais 10€</div>
+            </div>
+          </label>
+        </div>
+        
+        <!-- Section adresse -->
+        <div class="address-section" id="addressSection" style="display: none;">
+          <h4 class="address-title">Adresse de livraison</h4>
+          <div class="address-form">
+            <div class="form-group">
+              <label for="addressStreet">Adresse *</label>
+              <input type="text" id="addressStreet" placeholder="Numéro et nom de rue" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="addressCity">Ville *</label>
+                <input type="text" id="addressCity" placeholder="Ville" required>
+              </div>
+              <div class="form-group">
+                <label for="addressZip">Code postal *</label>
+                <input type="text" id="addressZip" placeholder="Code postal" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="addressNotes">Notes (optionnel)</label>
+              <textarea id="addressNotes" placeholder="Instructions spéciales pour la livraison" rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>Total:</span>
+          <span class="total-price" id="totalPrice">0.00€</span>
+        </div>
+        
+        <div class="cart-buttons">
+          <button class="order-btn" id="orderBtn">
+            <span>✓</span>
+            Commander
+          </button>
+          <button class="continue-btn" id="continueBtn">
+            Continuer les achats
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de commande -->
+  <div class="order-panel" id="orderPanel">
+    <div class="order-panel-content">
+      <div class="order-panel-header">
+        <h3>Récapitulatif de commande</h3>
+        <button class="order-panel-close" id="orderPanelClose">✕</button>
+      </div>
+      
+      <div class="order-summary" id="orderSummary">
+        <!-- Le contenu sera généré par JavaScript -->
+      </div>
+      
+      <div class="order-message">
+        <label for="orderMessage">Message à copier :</label>
+        <textarea id="orderMessage" readonly></textarea>
+        <button class="copy-btn" id="copyBtn">📋 Copier le message</button>
+      </div>
+      
+      <div class="order-actions">
+        <button class="snapchat-btn" id="snapchatBtn">
+          <img src="https://i.imgur.com/oBiTzEX.png" alt="Snapchat" class="snapchat-icon">
+          Continuer sur Snapchat
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration Supabase
+    const SUPABASE_URL = 'https://aapicehoqxdwixbiqucs.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhcGljZWhvcXhkd2l4YmlxdWNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0MzE5ODMsImV4cCI6MjA3MzAwNzk4M30.jBTeUfGBkVT0-5ElCD1NM6fCQCD7wnRpw4I2ulykLOQ';
+    
+    // Initialiser Supabase
+    let supabaseClient;
+    try {
+      const { createClient } = supabase;
+      supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log('✅ Supabase initialisé pour la page d\'accueil');
+    } catch (error) {
+      console.error('❌ Erreur initialisation Supabase:', error);
+    }
+
+    // Charger les informations depuis Supabase
+    async function loadInfoFromSupabase() {
+      if (!supabaseClient) {
+        console.error('Client Supabase non initialisé');
+        return;
+      }
+
+      try {
+        console.log('🔄 Chargement des informations depuis Supabase...');
+        
+        const { data, error } = await supabaseClient
+          .from('informations')
+          .select('*')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Erreur Supabase:', error);
+          showFallbackInfo();
+          return;
+        }
+
+        if (data && data.length > 0) {
+          console.log('✅ Informations chargées:', data.length);
+          displayInfoData(data[0]); // Afficher la première information active
+        } else {
+          console.log('⚠️ Aucune information trouvée');
+          showFallbackInfo();
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement:', error);
+        showFallbackInfo();
+      }
+    }
+
+    // Afficher les données d'information
+    function displayInfoData(info) {
+      const container = document.getElementById('infoContainer');
+      if (!container) return;
+
+      // Convertir le contenu markdown en HTML simple
+      const content = info.content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>')
+        .replace(/•/g, '&bull;');
+
+      // Générer les styles personnalisés
+      const customStyles = generateCustomStyles(info);
+      
+      // Appliquer les styles personnalisés
+      if (customStyles) {
+        const styleElement = document.getElementById('customInfoStyles');
+        if (styleElement) {
+          styleElement.remove();
+        }
+        
+        const newStyleElement = document.createElement('style');
+        newStyleElement.id = 'customInfoStyles';
+        newStyleElement.textContent = customStyles;
+        document.head.appendChild(newStyleElement);
+      }
+
+      container.innerHTML = `
+        <div class="info-card custom-info-card" id="infoCard-${info.id}">
+          <div class="info-header">
+            <h2 class="custom-title">${info.icon || '📋'} ${info.title}</h2>
+            ${info.subtitle ? `<p class="info-subtitle custom-subtitle">${info.subtitle}</p>` : ''}
+          </div>
+          <div class="info-content-text custom-content">
+            ${content}
+          </div>
+        </div>
+      `;
+    }
+
+    // Générer les styles personnalisés
+    function generateCustomStyles(info) {
+      let styles = '';
+      const cardId = `#infoCard-${info.id}`;
+      
+      // Couleurs
+      if (info.title_color) {
+        styles += `${cardId} .custom-title { color: ${info.title_color} !important; }\n`;
+      }
+      if (info.subtitle_color) {
+        styles += `${cardId} .custom-subtitle { color: ${info.subtitle_color} !important; }\n`;
+      }
+      if (info.content_color) {
+        styles += `${cardId} .custom-content { color: ${info.content_color} !important; }\n`;
+      }
+      if (info.background_color) {
+        styles += `${cardId} { background: ${info.background_color} !important; }\n`;
+      }
+      
+      // Taille du titre
+      if (info.title_size) {
+        const sizes = {
+          'small': '1.5rem',
+          'medium': '2rem',
+          'large': '2.5rem',
+          'xlarge': '3rem'
+        };
+        styles += `${cardId} .custom-title { font-size: ${sizes[info.title_size] || '2rem'} !important; }\n`;
+      }
+      
+      // Alignement du texte
+      if (info.text_align) {
+        styles += `${cardId} { text-align: ${info.text_align} !important; }\n`;
+      }
+      
+      // Effets visuels de base
+      if (info.gradient_effect) {
+        const gradientDirection = info.gradient_direction || '45deg';
+        const gradientStart = info.gradient_start || info.title_color || '#ffffff';
+        const gradientEnd = info.gradient_end || '#ff6b6b';
+        
+        if (gradientDirection === 'radial') {
+          styles += `${cardId} .custom-title { 
+            background: radial-gradient(circle, ${gradientStart}, ${gradientEnd});
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          }\n`;
+        } else {
+          styles += `${cardId} .custom-title { 
+            background: linear-gradient(${gradientDirection}, ${gradientStart}, ${gradientEnd});
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          }\n`;
+        }
+      }
+      
+      if (info.shadow_effect) {
+        styles += `${cardId} { 
+          box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+        }\n`;
+      }
+      
+      if (info.glow_effect) {
+        styles += `${cardId} { 
+          box-shadow: 0 0 20px ${info.title_color || '#ffffff'}40 !important;
+        }\n`;
+      }
+      
+      if (info.border_effect) {
+        styles += `${cardId} { 
+          border: 2px solid transparent;
+          background: linear-gradient(45deg, ${info.title_color || '#ffffff'}, #ff6b6b, #4ecdc4) border-box;
+          animation: borderGlow 2s ease-in-out infinite alternate;
+        }\n`;
+        styles += `@keyframes borderGlow {
+          from { border-color: ${info.title_color || '#ffffff'}; }
+          to { border-color: #ff6b6b; }
+        }\n`;
+      }
+      
+      if (info.pulse_effect) {
+        styles += `${cardId} { 
+          animation: pulse 2s ease-in-out infinite;
+        }\n`;
+        styles += `@keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }\n`;
+      }
+      
+      if (info.shake_effect) {
+        styles += `${cardId} { 
+          animation: shake 0.5s ease-in-out infinite;
+        }\n`;
+        styles += `@keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }\n`;
+      }
+      
+      // Animations d'entrée
+      if (info.animation_type && info.animation_type !== 'none') {
+        const animations = {
+          'fadeIn': 'fadeIn 0.8s ease-out',
+          'slideUp': 'slideUp 0.8s ease-out',
+          'slideDown': 'slideDown 0.8s ease-out',
+          'slideLeft': 'slideLeft 0.8s ease-out',
+          'slideRight': 'slideRight 0.8s ease-out',
+          'zoomIn': 'zoomIn 0.8s ease-out',
+          'zoomOut': 'zoomOut 0.8s ease-out',
+          'rotateIn': 'rotateIn 0.8s ease-out',
+          'bounceIn': 'bounceIn 1s ease-out',
+          'flipIn': 'flipIn 0.8s ease-out',
+          'typewriter': 'typewriter 2s steps(40, end)'
+        };
+        
+        styles += `${cardId} { 
+          animation: ${animations[info.animation_type]} !important;
+        }\n`;
+        
+        // Définir les keyframes pour chaque animation
+        if (info.animation_type === 'fadeIn') {
+          styles += `@keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }\n`;
+        } else if (info.animation_type === 'slideUp') {
+          styles += `@keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+          }\n`;
+        } else if (info.animation_type === 'slideDown') {
+          styles += `@keyframes slideDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+          }\n`;
+        } else if (info.animation_type === 'slideLeft') {
+          styles += `@keyframes slideLeft {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+          }\n`;
+        } else if (info.animation_type === 'slideRight') {
+          styles += `@keyframes slideRight {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+          }\n`;
+        } else if (info.animation_type === 'zoomIn') {
+          styles += `@keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+          }\n`;
+        } else if (info.animation_type === 'zoomOut') {
+          styles += `@keyframes zoomOut {
+            from { opacity: 0; transform: scale(1.5); }
+            to { opacity: 1; transform: scale(1); }
+          }\n`;
+        } else if (info.animation_type === 'rotateIn') {
+          styles += `@keyframes rotateIn {
+            from { opacity: 0; transform: rotate(-180deg); }
+            to { opacity: 1; transform: rotate(0deg); }
+          }\n`;
+        } else if (info.animation_type === 'bounceIn') {
+          styles += `@keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { opacity: 1; transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+          }\n`;
+        } else if (info.animation_type === 'flipIn') {
+          styles += `@keyframes flipIn {
+            from { opacity: 0; transform: perspective(400px) rotateY(90deg); }
+            to { opacity: 1; transform: perspective(400px) rotateY(0deg); }
+          }\n`;
+        } else if (info.animation_type === 'typewriter') {
+          styles += `${cardId} .custom-title {
+            overflow: hidden;
+            border-right: 2px solid ${info.title_color || '#ffffff'};
+            white-space: nowrap;
+            margin: 0 auto;
+            animation: typewriter 2s steps(40, end), blink-caret 0.75s step-end infinite;
+          }\n`;
+          styles += `@keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
+          }\n`;
+          styles += `@keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: ${info.title_color || '#ffffff'}; }
+          }\n`;
+        }
+      }
+      
+      // Effets au survol
+      if (info.hover_effect && info.hover_effect !== 'none') {
+        const hoverEffects = {
+          'scale': 'transform: scale(1.1);',
+          'lift': 'transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.3);',
+          'glow': `box-shadow: 0 0 30px ${info.title_color || '#ffffff'}60;`,
+          'rotate': 'transform: rotate(5deg);',
+          'shake': 'animation: shake 0.5s ease-in-out;',
+          'pulse': 'animation: pulse 1s ease-in-out;',
+          'colorChange': `background: linear-gradient(45deg, ${info.title_color || '#ffffff'}, #ff6b6b);`
+        };
+        
+        styles += `${cardId}:hover { 
+          transition: all 0.3s ease;
+          ${hoverEffects[info.hover_effect]}
+        }\n`;
+      }
+      
+      // Effets avancés
+      if (info.glassmorphism_effect) {
+        styles += `${cardId} { 
+          background: rgba(255, 255, 255, 0.1) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+        }\n`;
+      }
+      
+      if (info.neon_effect) {
+        styles += `${cardId} { 
+          text-shadow: 0 0 5px ${info.title_color || '#ffffff'}, 
+                       0 0 10px ${info.title_color || '#ffffff'}, 
+                       0 0 15px ${info.title_color || '#ffffff'}, 
+                       0 0 20px ${info.title_color || '#ffffff'} !important;
+          box-shadow: 0 0 20px ${info.title_color || '#ffffff'}40 !important;
+        }\n`;
+      }
+      
+      if (info.hologram_effect) {
+        styles += `${cardId} { 
+          background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%) !important;
+          animation: hologram 2s ease-in-out infinite !important;
+        }\n`;
+        styles += `@keyframes hologram {
+          0%, 100% { transform: skewX(0deg) scaleY(1); }
+          50% { transform: skewX(2deg) scaleY(1.02); }
+        }\n`;
+      }
+      
+      if (info.matrix_effect) {
+        styles += `${cardId}::before { 
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(90deg, transparent 0%, rgba(0,255,0,0.1) 50%, transparent 100%);
+          animation: matrix 3s linear infinite !important;
+          pointer-events: none;
+        }\n`;
+        styles += `@keyframes matrix {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }\n`;
+      }
+      
+      if (info.particle_effect) {
+        styles += `${cardId}::after { 
+          content: '✦ ✧ ✦ ✧ ✦';
+          position: absolute;
+          top: -20px;
+          left: 0;
+          right: 0;
+          color: ${info.title_color || '#ffffff'};
+          font-size: 12px;
+          animation: particles 4s ease-in-out infinite !important;
+          pointer-events: none;
+        }\n`;
+        styles += `@keyframes particles {
+          0%, 100% { opacity: 0; transform: translateY(0); }
+          50% { opacity: 1; transform: translateY(-10px); }
+        }\n`;
+      }
+      
+      if (info.morphing_effect) {
+        styles += `${cardId} { 
+          animation: morphing 3s ease-in-out infinite !important;
+        }\n`;
+        styles += `@keyframes morphing {
+          0%, 100% { border-radius: 8px; }
+          25% { border-radius: 50% 8px 8px 50%; }
+          50% { border-radius: 8px 50% 50% 8px; }
+          75% { border-radius: 50% 50% 8px 8px; }
+        }\n`;
+      }
+      
+      if (info.glitch_effect) {
+        styles += `${cardId} { 
+          animation: glitch 0.3s ease-in-out infinite !important;
+        }\n`;
+        styles += `@keyframes glitch {
+          0%, 100% { transform: translate(0); }
+          20% { transform: translate(-2px, 2px); }
+          40% { transform: translate(-2px, -2px); }
+          60% { transform: translate(2px, 2px); }
+          80% { transform: translate(2px, -2px); }
+        }\n`;
+      }
+      
+      if (info.liquid_effect) {
+        styles += `${cardId} { 
+          animation: liquid 4s ease-in-out infinite !important;
+        }\n`;
+        styles += `@keyframes liquid {
+          0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+          50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+        }\n`;
+      }
+      
+      if (info.fire_effect) {
+        styles += `${cardId} { 
+          background: linear-gradient(45deg, #ff0000, #ff4500, #ffa500, #ffff00) !important;
+          animation: fire 1s ease-in-out infinite alternate !important;
+        }\n`;
+        styles += `@keyframes fire {
+          0% { filter: hue-rotate(0deg); }
+          100% { filter: hue-rotate(20deg); }
+        }\n`;
+      }
+      
+      if (info.electric_effect) {
+        styles += `${cardId} { 
+          border: 2px solid ${info.title_color || '#ffffff'} !important;
+          box-shadow: 0 0 10px ${info.title_color || '#ffffff'}, 
+                      inset 0 0 10px ${info.title_color || '#ffffff'} !important;
+          animation: electric 0.5s ease-in-out infinite !important;
+        }\n`;
+        styles += `@keyframes electric {
+          0%, 100% { box-shadow: 0 0 10px ${info.title_color || '#ffffff'}, inset 0 0 10px ${info.title_color || '#ffffff'}; }
+          50% { box-shadow: 0 0 20px ${info.title_color || '#ffffff'}, inset 0 0 20px ${info.title_color || '#ffffff'}; }
+        }\n`;
+      }
+      
+      if (info.rainbow_effect) {
+        styles += `${cardId} { 
+          background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3) !important;
+          background-size: 400% 400% !important;
+          animation: rainbow 3s ease infinite !important;
+        }\n`;
+        styles += `@keyframes rainbow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }\n`;
+      }
+      
+      if (info.effect_3d) {
+        styles += `${cardId} { 
+          transform: perspective(1000px) rotateX(10deg) rotateY(10deg) !important;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
+        }\n`;
+      }
+      
+      // Paramètres d'effets
+      if (info.blur_intensity && info.blur_intensity > 0) {
+        styles += `${cardId} { filter: blur(${info.blur_intensity}px) !important; }\n`;
+      }
+      
+      if (info.brightness && info.brightness !== 100) {
+        styles += `${cardId} { filter: brightness(${info.brightness}%) !important; }\n`;
+      }
+      
+      if (info.contrast && info.contrast !== 100) {
+        styles += `${cardId} { filter: contrast(${info.contrast}%) !important; }\n`;
+      }
+      
+      if (info.saturation && info.saturation !== 100) {
+        styles += `${cardId} { filter: saturate(${info.saturation}%) !important; }\n`;
+      }
+      
+      // CSS personnalisé
+      if (info.custom_css) {
+        styles += `${cardId} { ${info.custom_css} }\n`;
+      }
+      
+      return styles;
+    }
+
+    // Afficher les informations de fallback si Supabase échoue
+    function showFallbackInfo() {
+      const container = document.getElementById('infoContainer');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="info-card">
+          <div class="info-header">
+            <h2>📋 Informations</h2>
+            <p class="info-subtitle">Chargement en cours...</p>
+          </div>
+          <div class="info-content-text">
+            <p>Les informations sont en cours de chargement. Veuillez patienter...</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Charger les informations au démarrage
+    document.addEventListener('DOMContentLoaded', function() {
+      loadInfoFromSupabase();
+    });
+  </script>
+  
+  <script src="supabase-config.js"></script>
+  <script src="order-message-manager.js"></script>
+  <!-- Contrôleur de musique flottant -->
+  <div class="floating-music-controls">
+    <button class="floating-music-btn" id="musicToggle" aria-label="Musique" onclick="window.forceToggleMusic && window.forceToggleMusic()">
+      <span class="icon">🔊</span>
+    </button>
+    <div class="floating-volume-control" id="volumeControl">
+      <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+      <span class="volume-value" id="volumeValue">50%</span>
+    </div>
+  </div>
+
+  <!-- Élément audio pour la musique de fond -->
+  <audio id="backgroundMusic" loop preload="auto">
+    <source src="music/music.mp3" type="audio/mpeg">
+    Votre navigateur ne supporte pas l'élément audio.
+  </audio>
+
+  <script src="script.js"></script>
+</body>
+</html>

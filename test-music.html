@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Contrôleur de Musique</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        button {
+            background: #58a6ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #79c0ff;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #1a3a1a; color: #4ade80; }
+        .error { background: #3a1a1a; color: #ff6b6b; }
+        .info { background: #1a2a3a; color: #58a6ff; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test du Contrôleur de Musique</h1>
+    
+    <div class="test-section">
+        <h3>Test des Éléments DOM</h3>
+        <button onclick="testElements()">Vérifier les éléments</button>
+        <div id="elementsStatus"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test de la Musique</h3>
+        <button onclick="testMusicPlay()">Play</button>
+        <button onclick="testMusicPause()">Pause</button>
+        <button onclick="testMusicToggle()">Toggle</button>
+        <div id="musicStatus"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test des Événements</h3>
+        <button onclick="testEvents()">Tester les événements</button>
+        <div id="eventsStatus"></div>
+    </div>
+
+    <!-- Élément audio de test -->
+    <audio id="testAudio" loop preload="auto">
+        <source src="music/music.mp3" type="audio/mpeg">
+        Votre navigateur ne supporte pas l'élément audio.
+    </audio>
+
+    <script>
+        let testAudio = null;
+        let isPlaying = false;
+
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function testElements() {
+            const elements = {
+                'backgroundMusic': document.getElementById('backgroundMusic'),
+                'musicToggle': document.getElementById('musicToggle'),
+                'volumeSlider': document.getElementById('volumeSlider'),
+                'volumeValue': document.getElementById('volumeValue'),
+                'volumeControl': document.getElementById('volumeControl'),
+                'testAudio': document.getElementById('testAudio')
+            };
+
+            let status = '<h4>Résultats :</h4>';
+            let allFound = true;
+
+            Object.keys(elements).forEach(key => {
+                const found = !!elements[key];
+                status += `<p>${key}: ${found ? '✅ Trouvé' : '❌ Non trouvé'}</p>`;
+                if (!found) allFound = false;
+            });
+
+            if (allFound) {
+                status += '<p><strong>✅ Tous les éléments sont présents</strong></p>';
+                showStatus('elementsStatus', status, 'success');
+            } else {
+                status += '<p><strong>❌ Certains éléments manquent</strong></p>';
+                showStatus('elementsStatus', status, 'error');
+            }
+        }
+
+        function testMusicPlay() {
+            testAudio = document.getElementById('testAudio');
+            if (!testAudio) {
+                showStatus('musicStatus', '❌ Élément audio non trouvé', 'error');
+                return;
+            }
+
+            const playPromise = testAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isPlaying = true;
+                    showStatus('musicStatus', '✅ Musique démarrée avec succès', 'success');
+                }).catch(error => {
+                    showStatus('musicStatus', `❌ Erreur: ${error.message}`, 'error');
+                });
+            }
+        }
+
+        function testMusicPause() {
+            if (!testAudio) {
+                testAudio = document.getElementById('testAudio');
+            }
+            
+            if (testAudio) {
+                testAudio.pause();
+                isPlaying = false;
+                showStatus('musicStatus', '✅ Musique mise en pause', 'success');
+            } else {
+                showStatus('musicStatus', '❌ Élément audio non trouvé', 'error');
+            }
+        }
+
+        function testMusicToggle() {
+            if (!testAudio) {
+                testAudio = document.getElementById('testAudio');
+            }
+            
+            if (!testAudio) {
+                showStatus('musicStatus', '❌ Élément audio non trouvé', 'error');
+                return;
+            }
+
+            if (isPlaying) {
+                testAudio.pause();
+                isPlaying = false;
+                showStatus('musicStatus', '✅ Musique mise en pause (toggle)', 'success');
+            } else {
+                const playPromise = testAudio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isPlaying = true;
+                        showStatus('musicStatus', '✅ Musique démarrée (toggle)', 'success');
+                    }).catch(error => {
+                        showStatus('musicStatus', `❌ Erreur toggle: ${error.message}`, 'error');
+                    });
+                }
+            }
+        }
+
+        function testEvents() {
+            const musicToggle = document.getElementById('musicToggle');
+            if (!musicToggle) {
+                showStatus('eventsStatus', '❌ Bouton musique non trouvé', 'error');
+                return;
+            }
+
+            // Simuler un clic
+            const clickEvent = new Event('click');
+            musicToggle.dispatchEvent(clickEvent);
+            
+            showStatus('eventsStatus', '✅ Événement de clic simulé', 'info');
+        }
+
+        // Test automatique au chargement
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testElements();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
