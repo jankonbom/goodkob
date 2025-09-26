@@ -630,7 +630,7 @@
       articleCard.innerHTML = `
         <div class="product-image">
           ${isVideo ? `
-            <video class="product-video" autoplay muted loop playsinline webkit-playsinline preload="auto" controls="false" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; pointer-events: none; outline: none; border: none;">
+            <video class="product-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" controls="false" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; pointer-events: none; outline: none; border: none;">
               <source src="${article.image_url}" type="video/mp4">
               Votre navigateur ne supporte pas la vidéo.
             </video>
@@ -1078,14 +1078,13 @@
       const isVideo = article.image_url && (
         article.image_url.startsWith('blob:') ||
         article.image_url.startsWith('data:video/') ||
-        (!article.image_url.startsWith('data:image/') && (
-          article.image_url.includes('.mp4') || 
-          article.image_url.includes('.webm') || 
-          article.image_url.includes('.mov') ||
-          article.image_url.includes('.avi') ||
-          article.image_url.includes('.mkv')
-        ))
+        (article.image_url.includes('github.com') && article.image_url.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i)) ||
+        (!article.image_url.startsWith('data:image/') && article.image_url.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i))
       );
+      
+      console.log('🔍 Détection vidéo modal pour:', article.name);
+      console.log('   URL:', article.image_url);
+      console.log('   Détectée comme vidéo:', isVideo);
 
       if (isVideo) {
         console.log('Création de vidéo dans le modal:', article.image_url);
