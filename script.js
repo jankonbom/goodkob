@@ -486,7 +486,7 @@
         return;
       }
       
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*&status=eq.active`, {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*`, {
         headers: {
           'apikey': SUPABASE_ANON_KEY,
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
@@ -495,11 +495,35 @@
       });
 
       if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
+        throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
       }
 
-      articles = await response.json();
-      console.log(`✅ ${articles.length} articles chargés depuis Supabase`);
+      const data = await response.json();
+      console.log('📄 Données reçues:', data);
+      
+      if (!Array.isArray(data)) {
+        throw new Error('Les données reçues ne sont pas un tableau d\'articles');
+      }
+
+      // Filtrer les articles actifs côté client
+      articles = data.filter(article => {
+        return article.status === 'active' || !article.status;
+      });
+      
+      console.log(`✅ ${articles.length} articles chargés depuis Supabase (tous statuts: ${data.length})`);
+      
+      if (articles.length === 0) {
+        console.warn('⚠️ Aucun article trouvé avec le statut "active"');
+        
+        // Vérifier s'il y a des articles avec d'autres statuts
+        const inactiveArticles = data.filter(article => article.status && article.status !== 'active');
+        if (inactiveArticles.length > 0) {
+          console.log('⚠️ Articles trouvés mais avec d\'autres statuts:', inactiveArticles.map(a => a.name + ' (' + a.status + ')'));
+        }
+        
+        showErrorMessage('Aucun article disponible pour le moment. Veuillez vérifier les articles en cours.');
+        return;
+      }
       
       // Remplacer le contenu statique par les articles dynamiques
       displayArticles();
@@ -513,7 +537,7 @@
     } catch (error) {
       console.error('❌ Erreur lors du chargement des articles:', error);
       // En cas d'erreur, afficher un message et essayer de charger les articles statiques
-      showErrorMessage('Erreur de chargement des articles. Vérifiez votre connexion internet.');
+      showErrorMessage(`Erreur de chargement des articles: ${error.message}`);
       loadStaticArticles();
     }
   }
@@ -578,14 +602,18 @@
       const isVideo = article.image_url && (
         article.image_url.startsWith('blob:') ||
         article.image_url.startsWith('data:video/') ||
-        (!article.image_url.startsWith('data:image/') && (
-          article.image_url.includes('.mp4') || 
-          article.image_url.includes('.webm') || 
-          article.image_url.includes('.mov') ||
-          article.image_url.includes('.avi') ||
-          article.image_url.includes('.mkv')
-        ))
+        (article.image_url.includes('github.com') && article.image_url.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i)) ||
+        (!article.image_url.startsWith('data:image/') && article.image_url.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i))
       );
+
+      // Debug pour les vidéos GitHub
+      if (article.image_url && article.image_url.includes('github.com')) {
+        console.log(`🔍 Debug vidéo pour ${article.name}:`);
+        console.log(`   URL: ${article.image_url}`);
+        console.log(`   Contient github.com: ${article.image_url.includes('github.com')}`);
+        console.log(`   Extension vidéo: ${article.image_url.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i) ? 'Oui' : 'Non'}`);
+        console.log(`   Détectée comme vidéo: ${isVideo ? '✅ OUI' : '❌ NON'}`);
+      }
 
       const categoryClass = article.category === 'bedave' ? 'bedave-category' : 
                            article.category === 'tabac' ? 'tabac-category' : 
@@ -602,7 +630,7 @@
       articleCard.innerHTML = `
         <div class="product-image">
           ${isVideo ? `
-            <video class="product-video" autoplay muted loop playsinline webkit-playsinline preload="auto" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; pointer-events: none;">
+            <video class="product-video" autoplay muted loop playsinline webkit-playsinline preload="auto" controls="false" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; pointer-events: none; outline: none; border: none;">
               <source src="${article.image_url}" type="video/mp4">
               Votre navigateur ne supporte pas la vidéo.
             </video>
@@ -618,18 +646,41 @@
       `;
 
       // Ajouter l'événement de clic
-      articleCard.addEventListener('click', () => {
+      articleCard.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Clic sur article:', article.name);
         openProductModal(article);
       });
+      
+      // Solution de secours : événement de clic direct
+      articleCard.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Clic direct sur article:', article.name);
+        openProductModal(article);
+      };
 
-      // Forcer la lecture des vidéos si nécessaire
+      // Configuration simple des vidéos
       if (isVideo) {
-        const video = articleCard.querySelector('.product-video');
-        if (video) {
-          video.addEventListener('loadeddata', () => {
-            video.play().catch(e => console.log('Autoplay bloqué:', e));
-          });
-        }
+        setTimeout(() => {
+          const video = articleCard.querySelector('.product-video');
+          if (video) {
+            console.log('Configuration vidéo pour:', article.name);
+            
+            // Configuration de base
+            video.controls = false;
+            video.muted = true;
+            video.loop = true;
+            video.playsInline = true;
+            video.style.pointerEvents = 'none';
+            
+            // Essayer de lancer
+            video.play().catch(e => {
+              console.log('Autoplay bloqué pour:', article.name, e);
+            });
+          }
+        }, 100);
       }
 
       productsGrid.appendChild(articleCard);
@@ -647,52 +698,92 @@
     // Plus de boutons de déblocage
   }
 
-  // Fonction pour forcer la lecture de toutes les vidéos
+  // Fonction simplifiée pour lancer les vidéos
   function forcePlayAllVideos() {
+    console.log('Lancement des vidéos...');
     const videos = document.querySelectorAll('video');
-    videos.forEach(video => {
-      // Supprimer les contrôles et forcer l'autoplay
+    console.log('Vidéos trouvées:', videos.length);
+    
+    videos.forEach((video, index) => {
+      console.log(`Configuration vidéo ${index + 1}`);
+      
+      // Configuration simple
       video.controls = false;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
       video.style.pointerEvents = 'none';
       
-      if (video.paused) {
-        video.play().catch(e => {
-          console.log('Autoplay bloqué, tentative de déblocage...', e);
-          // Essayer plusieurs méthodes de déblocage
-          tryUnlockAutoplay(video);
-        });
-      }
+      // Essayer de lancer
+      video.play().then(() => {
+        console.log(`Vidéo ${index + 1} lancée`);
+      }).catch(e => {
+        console.log(`Vidéo ${index + 1} bloquée:`, e.message);
+      });
     });
   }
 
-  // Fonction pour débloquer l'autoplay
+  // Fonction simplifiée pour débloquer l'autoplay
   function tryUnlockAutoplay(video) {
-    // Méthode 1: Interaction utilisateur sur le document
-    const unlockOnInteraction = () => {
-      video.play().then(() => {
-        console.log('Vidéo lancée après interaction');
-        document.removeEventListener('click', unlockOnInteraction);
-        document.removeEventListener('touchstart', unlockOnInteraction);
-      }).catch(() => {});
+    console.log('Tentative de déblocage vidéo');
+    
+    // Essayer de lancer après interaction
+    const tryPlay = () => {
+      video.play().catch(e => console.log('Toujours bloqué:', e.message));
     };
-
-    document.addEventListener('click', unlockOnInteraction, { once: true });
-    document.addEventListener('touchstart', unlockOnInteraction, { once: true });
-
-    // Méthode 2: Essayer de lancer après un délai
-    setTimeout(() => {
-      video.play().catch(() => {});
-    }, 2000);
-
-    // Méthode 3: Essayer de lancer au scroll
-    const unlockOnScroll = () => {
-      video.play().then(() => {
-        console.log('Vidéo lancée au scroll');
-        window.removeEventListener('scroll', unlockOnScroll);
-      }).catch(() => {});
-    };
-    window.addEventListener('scroll', unlockOnScroll, { once: true });
+    
+    // Écouter les interactions
+    document.addEventListener('click', tryPlay, { once: true });
+    document.addEventListener('touchstart', tryPlay, { once: true });
+    
+    // Essayer après un délai
+    setTimeout(tryPlay, 1000);
   }
+
+  // Fonction pour initialiser les événements du modal
+  function initializeModalEvents() {
+    const modal = document.getElementById('orderModal');
+    const modalClose = document.getElementById('modalClose');
+    
+    if (!modal) {
+      console.error('Modal non trouvé pour initialisation');
+      return;
+    }
+    
+    // Bouton de fermeture
+    if (modalClose) {
+      modalClose.addEventListener('click', () => {
+        console.log('Fermeture du modal');
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      });
+    }
+    
+    // Fermer en cliquant sur le fond
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        console.log('Fermeture du modal par clic sur fond');
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    });
+    
+    // Fermer avec Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) {
+        console.log('Fermeture du modal avec Escape');
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    });
+    
+    console.log('Événements du modal initialisés');
+  }
+
+  // Fonction de test supprimée pour éviter les conflits
 
   // Fonction supprimée - plus de boutons de déblocage
 
@@ -718,22 +809,33 @@
       return;
     }
     
+    // Mode ultra-rapide pour mobile et Netlify
+    const isNetlify = window.location.hostname.includes('netlify.app');
+    const isMobile = window.innerWidth < 768;
+    const fastMode = isNetlify || isMobile; // Mobile ou Netlify
+    
+    // Option pour désactiver complètement la page de chargement sur mobile très lent
+    if (isMobile && window.innerWidth < 480) {
+      console.log('Mobile très petit détecté - Page de chargement désactivée');
+      loadingOverlay.style.display = 'none';
+      return;
+    }
+    
     // S'assurer que la page de chargement est visible
     loadingOverlay.style.display = 'flex';
     loadingOverlay.style.zIndex = '10000';
     
-    // Mode rapide pour GitHub Pages
-    const isGitHubPages = window.location.hostname.includes('github.io');
-    const fastMode = isGitHubPages || window.innerWidth < 768; // Mobile ou GitHub Pages
-    
-    console.log('Page de chargement initialisée - Mode rapide:', fastMode);
+    console.log('Page de chargement initialisée - Mode ultra-rapide:', fastMode);
     
     let progress = 0;
-    const totalSteps = fastMode ? 50 : 100; // Moins d'étapes en mode rapide
-    const stepDuration = fastMode ? 10 : 20; // Plus rapide en mode rapide
+    const totalSteps = fastMode ? 20 : 50; // Beaucoup moins d'étapes en mode rapide
+    const stepDuration = fastMode ? 5 : 15; // Ultra-rapide en mode rapide
     
-    // Messages de chargement
-    const loadingMessages = [
+    // Messages de chargement simplifiés
+    const loadingMessages = fastMode ? [
+      'Chargement...',
+      'Prêt !'
+    ] : [
       'Chargement...',
       'Préparation des vidéos...',
       'Optimisation mobile...',
@@ -749,7 +851,7 @@
       progressFill.style.width = progress + '%';
       
       // Mettre à jour le message
-      const messageInterval = fastMode ? 12 : 25;
+      const messageInterval = fastMode ? 10 : 20;
       if (progress % messageInterval === 0 && messageIndex < loadingMessages.length - 1) {
         messageIndex++;
         loadingText.textContent = loadingMessages[messageIndex];
@@ -761,61 +863,44 @@
         // Chargement terminé
         loadingText.textContent = loadingMessages[loadingMessages.length - 1];
         
-        // Précharger toutes les vidéos
-        preloadAllVideos().then(() => {
-          // Attendre un peu avant de fermer
-          const waitTime = fastMode ? 200 : 500;
+        // Précharger toutes les vidéos (simplifié pour mobile)
+        if (fastMode) {
+          // Mode ultra-rapide : fermer immédiatement
           setTimeout(() => {
             hideLoadingPage();
-          }, waitTime);
-        });
+          }, 100);
+        } else {
+          preloadAllVideos().then(() => {
+            setTimeout(() => {
+              hideLoadingPage();
+            }, 200);
+          });
+        }
       }
     }
     
-    // Fonction pour précharger toutes les vidéos
-    function preloadAllVideos() {
-      return new Promise((resolve) => {
-        const videos = document.querySelectorAll('video');
-        let loadedCount = 0;
-        
-        if (videos.length === 0) {
-          resolve();
-          return;
-        }
-        
-        videos.forEach(video => {
-          // Forcer les attributs pour l'autoplay
-          video.setAttribute('autoplay', 'true');
-          video.setAttribute('muted', 'true');
-          video.setAttribute('loop', 'true');
-          video.setAttribute('playsinline', 'true');
-          video.setAttribute('webkit-playsinline', 'true');
-          video.controls = false;
-          video.style.pointerEvents = 'none';
-          
-          video.addEventListener('loadeddata', () => {
-            loadedCount++;
-            // Essayer de lancer immédiatement
-            video.play().catch(() => {});
-            if (loadedCount === videos.length) {
-              resolve();
-            }
-          });
-          
-          // Forcer le chargement
-          video.load();
-          
-          // Essayer de lancer immédiatement après chargement
-          video.addEventListener('canplay', () => {
-            video.play().catch(() => {});
-          });
-        });
-        
-        // Timeout de sécurité adapté au mode
-        const timeout = fastMode ? 2000 : 3000;
-        setTimeout(resolve, timeout);
+  // Fonction simplifiée pour précharger les vidéos
+  function preloadAllVideos() {
+    console.log('Préchargement des vidéos...');
+    const videos = document.querySelectorAll('video');
+    console.log('Vidéos à précharger:', videos.length);
+    
+    videos.forEach((video, index) => {
+      console.log(`Préchargement vidéo ${index + 1}`);
+      video.controls = false;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.style.pointerEvents = 'none';
+      
+      // Essayer de lancer
+      video.play().catch(e => {
+        console.log(`Vidéo ${index + 1} préchargement bloqué:`, e.message);
       });
-    }
+    });
+    
+    return Promise.resolve();
+  }
     
     // Fonction pour masquer la page de chargement
     function hideLoadingPage() {
@@ -835,8 +920,8 @@
       loadingClose.addEventListener('click', hideLoadingPage);
     }
     
-    // Démarrer le chargement plus rapidement
-    const startDelay = fastMode ? 100 : 200;
+    // Démarrer le chargement ultra-rapidement
+    const startDelay = fastMode ? 50 : 100;
     setTimeout(updateProgress, startDelay);
   }
 
@@ -907,31 +992,78 @@
 
   // Fonction pour ouvrir le modal d'un produit
   function openProductModal(article) {
+    console.log('Ouverture du modal pour:', article.name);
     const modal = document.getElementById('orderModal');
-    if (!modal) return;
+    if (!modal) {
+      console.error('Modal non trouvé!');
+      return;
+    }
 
     // Mettre à jour le contenu du modal
     updateModalContent(article);
     
-    // Ouvrir le modal
+    // Forcer l'ouverture du modal
+    modal.style.display = 'flex';
     modal.classList.add('active');
+    modal.style.zIndex = '10000';
     document.body.style.overflow = 'hidden';
+    
+    console.log('Modal ouvert avec classe active et display flex');
+    
+    // Vérifier que le modal est visible
+    setTimeout(() => {
+      const rect = modal.getBoundingClientRect();
+      console.log('Modal visible:', rect.width > 0 && rect.height > 0);
+      
+      // Si le modal n'est pas visible, forcer l'affichage
+      if (rect.width === 0 || rect.height === 0) {
+        console.log('Modal non visible, forçage de l\'affichage...');
+        modal.style.display = 'flex';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.zIndex = '10000';
+        modal.style.background = 'rgba(0, 0, 0, 0.8)';
+      }
+    }, 100);
     
     // Forcer la lecture des vidéos dans le modal après ouverture
     setTimeout(() => {
       const modalVideos = modal.querySelectorAll('video');
       modalVideos.forEach(video => {
-        video.play().catch(() => {});
+        // Supprimer les contrôles
+        video.removeAttribute('controls');
+        video.controls = false;
+        video.style.pointerEvents = 'none';
+        video.style.outline = 'none';
+        video.style.border = 'none';
+        
+        // Forcer la lecture
+        video.play().then(() => {
+          console.log('Vidéo modal lancée après ouverture');
+        }).catch(e => {
+          console.log('Autoplay modal bloqué après ouverture:', e);
+        });
       });
     }, 500);
   }
 
   // Fonction pour mettre à jour le contenu du modal avec les données de l'article
   function updateModalContent(article) {
+    console.log('Mise à jour du contenu du modal pour:', article.name);
     const modalTitle = document.querySelector('.modal-title');
     const modalDescription = document.querySelector('.modal-description');
     const modalImageElement = document.querySelector('.modal-product-image');
     const pricingOptions = document.querySelector('.pricing-options');
+    
+    console.log('Éléments du modal trouvés:', {
+      modalTitle: !!modalTitle,
+      modalDescription: !!modalDescription,
+      modalImageElement: !!modalImageElement,
+      pricingOptions: !!pricingOptions
+    });
 
     if (modalTitle) {
       modalTitle.innerHTML = article.name;
@@ -956,31 +1088,42 @@
       );
 
       if (isVideo) {
+        console.log('Création de vidéo dans le modal:', article.image_url);
         modalImageElement.innerHTML = `
-          <video class="modal-video" autoplay muted loop playsinline webkit-playsinline preload="auto" style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px 20px 0 0; pointer-events: none;">
+          <video class="modal-video" autoplay muted loop playsinline webkit-playsinline preload="auto" controls="false" style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px 20px 0 0; pointer-events: none; outline: none; border: none;">
             <source src="${article.image_url}" type="video/mp4">
             Votre navigateur ne supporte pas la vidéo.
           </video>
         `;
+        console.log('Vidéo créée dans le modal');
         
-        // Forcer la lecture de la vidéo dans le modal
-        const modalVideo = modalImageElement.querySelector('.modal-video');
-        if (modalVideo) {
-          // Forcer les dimensions pour mobile
-          modalVideo.style.width = '100%';
-          modalVideo.style.height = '100%';
-          modalVideo.style.objectFit = 'cover';
-          modalVideo.style.borderRadius = '20px 20px 0 0';
-          
-          modalVideo.addEventListener('loadeddata', () => {
-            modalVideo.play().catch(e => console.log('Autoplay modal bloqué:', e));
-          });
-          
-          // Essayer de lancer immédiatement
-          setTimeout(() => {
-            modalVideo.play().catch(() => {});
-          }, 100);
-        }
+        // Configuration simple de la vidéo dans le modal
+        setTimeout(() => {
+          const modalVideo = modalImageElement.querySelector('.modal-video');
+          if (modalVideo) {
+            console.log('Configuration vidéo modal pour:', article.name);
+            
+            // Configuration de base
+            modalVideo.controls = false;
+            modalVideo.muted = true;
+            modalVideo.loop = true;
+            modalVideo.playsInline = true;
+            modalVideo.style.pointerEvents = 'none';
+            modalVideo.style.width = '100%';
+            modalVideo.style.height = '100%';
+            modalVideo.style.objectFit = 'cover';
+            modalVideo.style.borderRadius = '20px 20px 0 0';
+            
+            // Essayer de lancer
+            modalVideo.play().then(() => {
+              console.log('Vidéo modal lancée');
+            }).catch(e => {
+              console.log('Vidéo modal bloquée:', e.message);
+            });
+          } else {
+            console.error('Vidéo modal non trouvée');
+          }
+        }, 200);
       } else {
         modalImageElement.innerHTML = `
           <img src="${article.image_url}" alt="${article.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px 20px 0 0;">
@@ -1020,6 +1163,53 @@
       });
     });
   }
+
+  // Fonction de debug pour tester Supabase
+  window.debugSupabase = async function() {
+    console.log('🔍 Test de connexion Supabase...');
+    console.log('SUPABASE_URL:', typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : 'Non définie');
+    console.log('SUPABASE_ANON_KEY:', typeof SUPABASE_ANON_KEY !== 'undefined' ? (SUPABASE_ANON_KEY.substring(0, 20) + '...') : 'Non définie');
+    
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/articles?select=*`, {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Status de réponse:', response.status);
+      console.log('Headers:', [...response.headers.entries()]);
+      
+      if (!response.ok) {
+        console.error('❌ Erreur de connexion:', response.statusText);
+        return;
+      }
+
+      const data = await response.json();
+      console.log('📄 Tous les articles de la DB:', data);
+      console.log('Nombre total d\'articles:', data.length);
+      
+      data.forEach((article, index) => {
+        console.log(`Article ${index + 1}:`, {
+          id: article.id,
+          name: article.name,
+          status: article.status,
+          category: article.category
+        });
+      });
+      
+    } catch (error) {
+      console.error('❌ Erreur de test Supabase:', error);
+    }
+  };
+
+  // Fonction pour forcer le rechargement des articles
+  window.reloadArticles = async function() {
+    console.log('🔄 Rechargement forcé des articles...');
+    await loadArticles();
+  };
 
   // Initialisation - afficher les produits STUP par défaut
   document.addEventListener('DOMContentLoaded', async () => {
@@ -1714,6 +1904,11 @@
   // Initialiser le trigger admin caché
   setupAdminTrigger();
   
+  // Initialiser les événements du modal
+  initializeModalEvents();
+  
+  // Test des événements de clic supprimé
+  
   // Forcer la lecture des vidéos dès le chargement
   setTimeout(() => {
     const videos = document.querySelectorAll('video');
@@ -1727,19 +1922,18 @@
   // Initialiser les corrections GitHub Pages
   setupGitHubPagesVideoFix();
   
-  // Initialiser la page de chargement immédiatement
-  setTimeout(() => {
-    initializeLoadingPage();
-  }, 100);
+  // Initialiser la page de chargement immédiatement (ultra-rapide)
+  const isMobile = window.innerWidth < 768;
+  const isNetlify = window.location.hostname.includes('netlify.app');
   
-  // Initialisation de secours pour mobile
-  if (window.innerWidth < 768) {
+  if (isMobile || isNetlify) {
+    // Mode ultra-rapide pour mobile/Netlify
     setTimeout(() => {
-      const loadingOverlay = document.getElementById('loadingOverlay');
-      if (loadingOverlay) {
-        loadingOverlay.style.display = 'flex';
-        loadingOverlay.style.zIndex = '10000';
-      }
+      initializeLoadingPage();
+    }, 10);
+  } else {
+    setTimeout(() => {
+      initializeLoadingPage();
     }, 50);
   }
   

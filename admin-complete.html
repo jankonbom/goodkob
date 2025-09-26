@@ -3214,42 +3214,42 @@
                                    fileName.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i);
                     
                     if (isVideo) {
-                        // Pour les vidéos, vérifier la taille (limite Cloudinary: 100MB)
-                        const maxVideoSize = 100 * 1024 * 1024; // 100MB max avec Cloudinary
+                        // Pour les vidéos, vérifier la taille (limite GitHub: 100MB)
+                        const maxVideoSize = 100 * 1024 * 1024; // 100MB max avec GitHub
                         
                         if (selectedMediaFile.size > maxVideoSize) {
                             showNotification('⚠️ Vidéo trop volumineuse (max 100MB)', 'error');
                             return;
                         }
                         
-                        // Option 2: Cloudinary Storage pour les vidéos (NOUVELLE - jusqu'à 100 Mo)
+                        // Option 2: GitHub Storage pour les vidéos (NOUVELLE - illimité)
                         try {
-                            showNotification('🎥 Upload de la vidéo vers Cloudinary...', 'info');
-                            const videoUrl = await uploadToCloudinary(selectedMediaFile, fileName);
+                            showNotification('🎥 Upload de la vidéo vers GitHub...', 'info');
+                            const videoUrl = await uploadToGitHub(selectedMediaFile, fileName);
                             articleData.image_url = videoUrl;
                             
-                            console.log('🎥 Vidéo uploadée vers Cloudinary:', fileName, 'URL:', videoUrl);
+                            console.log('🎥 Vidéo uploadée vers GitHub:', fileName, 'URL:', videoUrl);
                             
                             // Sauvegarder l'article avec l'URL de la vidéo
                                 await saveArticleToDatabase(articleData);
                         } catch (error) {
-                            console.error('Erreur lors de l\'upload de la vidéo vers Cloudinary:', error);
+                            console.error('Erreur lors de l\'upload de la vidéo vers GitHub:', error);
                             showNotification('Erreur lors de l\'upload de la vidéo: ' + error.message, 'error');
                             return;
                         }
                     } else {
-                        // Option 2: Cloudinary Storage pour les images (NOUVELLE - jusqu'à 100 Mo)
+                        // Option 2: GitHub Storage pour les images (NOUVELLE - illimité)
                         try {
-                            showNotification('🖼️ Upload de l\'image vers Cloudinary...', 'info');
-                            const imageUrl = await uploadToCloudinary(selectedMediaFile, fileName);
+                            showNotification('🖼️ Upload de l\'image vers GitHub...', 'info');
+                            const imageUrl = await uploadToGitHub(selectedMediaFile, fileName);
                             articleData.image_url = imageUrl;
                             
-                            console.log('🖼️ Image uploadée vers Cloudinary:', fileName, 'URL:', imageUrl);
+                            console.log('🖼️ Image uploadée vers GitHub:', fileName, 'URL:', imageUrl);
                             
                             // Sauvegarder l'article avec l'URL de l'image
                             await saveArticleToDatabase(articleData);
                         } catch (error) {
-                            console.error('Erreur lors de l\'upload de l\'image vers Cloudinary:', error);
+                            console.error('Erreur lors de l\'upload de l\'image vers GitHub:', error);
                             showNotification('Erreur lors de l\'upload de l\'image: ' + error.message, 'error');
                             return;
                         }
@@ -5031,5 +5031,11 @@ Ce service n'est pas disponible pour le moment ⛔`,
             }
         });
     </script>
+    
+    <!-- Scripts GitHub Storage -->
+    <script src="github-storage.js"></script>
+    <script src="github-security.js"></script>
+    <script src="manual-migration-guide.js"></script>
+    <script src="admin-video-fix.js"></script>
 </body>
 </html>

@@ -2040,6 +2040,89 @@ body::before {
   pointer-events: none;
 }
 
+/* Masquer complètement les contrôles vidéo */
+video::-webkit-media-controls {
+  display: none !important;
+}
+
+video::-webkit-media-controls-panel {
+  display: none !important;
+}
+
+video::-webkit-media-controls-play-button {
+  display: none !important;
+}
+
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+}
+
+video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+}
+
+video::-webkit-media-controls-timeline {
+  display: none !important;
+}
+
+video::-webkit-media-controls-current-time-display {
+  display: none !important;
+}
+
+video::-webkit-media-controls-time-remaining-display {
+  display: none !important;
+}
+
+video::-webkit-media-controls-mute-button {
+  display: none !important;
+}
+
+video::-webkit-media-controls-volume-slider {
+  display: none !important;
+}
+
+video::-webkit-media-controls-fullscreen-button {
+  display: none !important;
+}
+
+video::-webkit-media-controls-rewind-button {
+  display: none !important;
+}
+
+video::-webkit-media-controls-return-to-realtime-button {
+  display: none !important;
+}
+
+video::-webkit-media-controls-toggle-closed-captions-button {
+  display: none !important;
+}
+
+/* Forcer la suppression des contrôles */
+video[controls] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+video[controls]::-webkit-media-controls {
+  display: none !important;
+}
+
+/* Styles pour les vidéos */
+.product-video,
+.modal-video {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.product-video::-webkit-media-controls,
+.modal-video::-webkit-media-controls {
+  display: none !important;
+}
+
 /* Responsive - Mobile First Approach */
 @media (max-width: 768px) {
   /* Variables pour mobile */
