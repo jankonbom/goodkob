@@ -630,7 +630,7 @@
       articleCard.innerHTML = `
         <div class="product-image">
           ${isVideo ? `
-            <video class="product-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" controls="false" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; pointer-events: none; outline: none; border: none;">
+            <video class="product-video" autoplay muted loop playsinline webkit-playsinline preload="auto" controls="false" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; pointer-events: none; outline: none; border: none;">
               <source src="${article.image_url}" type="video/mp4">
               Votre navigateur ne supporte pas la vidéo.
             </video>
@@ -668,16 +668,33 @@
           if (video) {
             console.log('Configuration vidéo pour:', article.name);
             
-            // Configuration de base
+            // Configuration optimisée pour autoplay
             video.controls = false;
             video.muted = true;
             video.loop = true;
             video.playsInline = true;
+            video.autoplay = true;
             video.style.pointerEvents = 'none';
+            video.style.outline = 'none';
+            video.style.border = 'none';
             
-            // Essayer de lancer
-            video.play().catch(e => {
-              console.log('Autoplay bloqué pour:', article.name, e);
+            // Forcer le chargement
+            video.load();
+            
+            // Essayer de lancer immédiatement
+            video.play().then(() => {
+              console.log(`✅ Vidéo lancée: ${article.name}`);
+            }).catch(e => {
+              console.log(`⚠️ Autoplay bloqué pour: ${article.name}`, e.message);
+              
+              // Retry après un délai
+              setTimeout(() => {
+                video.play().then(() => {
+                  console.log(`✅ Vidéo lancée en retry: ${article.name}`);
+                }).catch(e2 => {
+                  console.log(`❌ Vidéo définitivement bloquée: ${article.name}`);
+                });
+              }, 1000);
             });
           }
         }, 100);
@@ -700,27 +717,56 @@
 
   // Fonction simplifiée pour lancer les vidéos
   function forcePlayAllVideos() {
-    console.log('Lancement des vidéos...');
+    console.log('🎥 Lancement de toutes les vidéos...');
     const videos = document.querySelectorAll('video');
-    console.log('Vidéos trouvées:', videos.length);
+    console.log(`📹 ${videos.length} vidéos trouvées`);
     
     videos.forEach((video, index) => {
-      console.log(`Configuration vidéo ${index + 1}`);
+      console.log(`🎬 Configuration vidéo ${index + 1}`);
       
-      // Configuration simple
+      // Configuration optimisée pour autoplay
       video.controls = false;
       video.muted = true;
       video.loop = true;
       video.playsInline = true;
+      video.autoplay = true;
       video.style.pointerEvents = 'none';
+      video.style.outline = 'none';
+      video.style.border = 'none';
       
-      // Essayer de lancer
+      // Forcer le chargement
+      video.load();
+      
+      // Essayer de lancer immédiatement
       video.play().then(() => {
-        console.log(`Vidéo ${index + 1} lancée`);
+        console.log(`✅ Vidéo ${index + 1} lancée avec succès`);
       }).catch(e => {
-        console.log(`Vidéo ${index + 1} bloquée:`, e.message);
+        console.log(`⚠️ Vidéo ${index + 1} bloquée:`, e.message);
+        
+        // Essayer de nouveau après un délai
+        setTimeout(() => {
+          video.play().then(() => {
+            console.log(`✅ Vidéo ${index + 1} lancée en retry`);
+          }).catch(e2 => {
+            console.log(`❌ Vidéo ${index + 1} définitivement bloquée:`, e2.message);
+          });
+        }, 500);
       });
     });
+    
+    // Essayer de nouveau toutes les vidéos après 2 secondes
+    setTimeout(() => {
+      console.log('🔄 Retry de toutes les vidéos...');
+      videos.forEach((video, index) => {
+        if (video.paused) {
+          video.play().then(() => {
+            console.log(`✅ Vidéo ${index + 1} lancée en retry final`);
+          }).catch(e => {
+            console.log(`❌ Vidéo ${index + 1} toujours bloquée`);
+          });
+        }
+      });
+    }, 2000);
   }
 
   // Fonction simplifiée pour débloquer l'autoplay
@@ -1085,11 +1131,19 @@
       console.log('🔍 Détection vidéo modal pour:', article.name);
       console.log('   URL:', article.image_url);
       console.log('   Détectée comme vidéo:', isVideo);
+      
+      // Debug spécifique pour GitHub
+      if (article.image_url && article.image_url.includes('github.com')) {
+        console.log('   🔍 Debug GitHub modal:');
+        console.log('   - Contient github.com:', article.image_url.includes('github.com'));
+        console.log('   - Extension vidéo:', article.image_url.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i));
+        console.log('   - URL complète:', article.image_url);
+      }
 
       if (isVideo) {
         console.log('Création de vidéo dans le modal:', article.image_url);
         modalImageElement.innerHTML = `
-          <video class="modal-video" autoplay muted loop playsinline webkit-playsinline preload="auto" controls="false" style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px 20px 0 0; pointer-events: none; outline: none; border: none;">
+          <video class="modal-video" muted loop playsinline webkit-playsinline preload="metadata" controls="true" style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px 20px 0 0; outline: none; border: none;">
             <source src="${article.image_url}" type="video/mp4">
             Votre navigateur ne supporte pas la vidéo.
           </video>
@@ -1103,22 +1157,35 @@
             console.log('Configuration vidéo modal pour:', article.name);
             
             // Configuration de base
-            modalVideo.controls = false;
+            modalVideo.controls = true;
             modalVideo.muted = true;
             modalVideo.loop = true;
             modalVideo.playsInline = true;
-            modalVideo.style.pointerEvents = 'none';
             modalVideo.style.width = '100%';
             modalVideo.style.height = '100%';
             modalVideo.style.objectFit = 'cover';
             modalVideo.style.borderRadius = '20px 20px 0 0';
             
-            // Essayer de lancer
-            modalVideo.play().then(() => {
-              console.log('Vidéo modal lancée');
-            }).catch(e => {
-              console.log('Vidéo modal bloquée:', e.message);
-            });
+            // Configuration spéciale mobile
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+              console.log('📱 Configuration mobile pour vidéo modal');
+              modalVideo.setAttribute('playsinline', 'true');
+              modalVideo.setAttribute('webkit-playsinline', 'true');
+              modalVideo.setAttribute('preload', 'metadata');
+              modalVideo.controls = true;
+              modalVideo.muted = true;
+              
+              // Ne pas essayer de jouer automatiquement sur mobile
+              console.log('📱 Mobile détecté - vidéo prête à être lue manuellement');
+            } else {
+              // Essayer de lancer sur desktop
+              modalVideo.play().then(() => {
+                console.log('Vidéo modal lancée');
+              }).catch(e => {
+                console.log('Vidéo modal bloquée:', e.message);
+              });
+            }
           } else {
             console.error('Vidéo modal non trouvée');
           }
@@ -1937,4 +2004,8 @@
   }
   
   console.log('DarkLabbb Shop - Interface chargée avec succès');
+  
+  // Export des fonctions pour debug
+  window.loadArticles = loadArticles;
+  window.reloadArticles = loadArticles;
 })();
