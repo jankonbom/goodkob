@@ -59,70 +59,43 @@ async function uploadToGitHub(file, fileName, githubToken = null) {
     try {
         console.log('📤 Upload vers GitHub:', fileName);
         
-        // Essayer d'abord l'upload automatique avec le token
-        try {
-            const token = GITHUB_CONFIG.getToken();
-            console.log('🔐 Test du token GitHub...');
-            
-            // Test du token d'abord
-            console.log('🔐 Token utilisé:', token.substring(0, 8) + '...');
-            const testResponse = await fetch('https://api.github.com/user', {
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            
-            console.log('📊 Status de la réponse:', testResponse.status);
-            
-            if (!testResponse.ok) {
-                const errorData = await testResponse.json();
-                console.log('❌ Erreur détaillée:', errorData);
-                throw new Error(`Token GitHub invalide ou expiré (Status: ${testResponse.status})`);
-            }
-            
-            console.log('✅ Token GitHub valide, upload en cours...');
-            
-            // Convertir le fichier en base64
-            const base64Content = await fileToBase64(file);
-            
-            // URL de l'API GitHub
-            const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}/contents/${fileName}`;
-            
-            // Données pour l'upload
-            const uploadData = {
-                message: `Upload: ${fileName}`,
-                content: base64Content,
-                branch: GITHUB_CONFIG.branch
-            };
-            
-            // Upload via API GitHub
-            const response = await fetch(apiUrl, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/vnd.github.v3+json'
-                },
-                body: JSON.stringify(uploadData)
-            });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(`Erreur GitHub API: ${error.message}`);
-            }
-            
-            const result = await response.json();
-            const publicUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}/main/${fileName}`;
-            
-            console.log('✅ Upload automatique réussi:', publicUrl);
-            return publicUrl;
-            
-        } catch (tokenError) {
-            console.log('⚠️ Token invalide, passage au mode manuel');
-            console.log('🔑 Créez un nouveau token: createNewGitHubToken()');
-            throw tokenError;
+        // Upload direct avec le token
+        const token = GITHUB_CONFIG.getToken();
+        
+        // Convertir le fichier en base64
+        const base64Content = await fileToBase64(file);
+        
+        // URL de l'API GitHub
+        const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}/contents/${fileName}`;
+        
+        // Données pour l'upload
+        const uploadData = {
+            message: `Upload: ${fileName}`,
+            content: base64Content,
+            branch: GITHUB_CONFIG.branch
+        };
+        
+        // Upload via API GitHub
+        const response = await fetch(apiUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify(uploadData)
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(`Erreur GitHub API: ${error.message}`);
         }
+        
+        const result = await response.json();
+        const publicUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}/main/${fileName}`;
+        
+        console.log('✅ Upload réussi:', publicUrl);
+        return publicUrl;
         
     } catch (error) {
         console.error('❌ Erreur upload GitHub:', error);
@@ -172,7 +145,7 @@ async function migrateFromCloudinaryToGitHub(githubToken = null) {
             throw new Error('Configurez d\'abord votre GitHub avec setupGitHubStorage(username)');
         }
         
-        // Token GitHub sécurisé
+        // Token GitHub direct
         const token = GITHUB_CONFIG.getToken();
         
         // Récupérer les articles avec images Cloudinary
