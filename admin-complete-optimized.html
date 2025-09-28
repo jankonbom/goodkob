@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Panel Admin Complet - DarkLabbb Shop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+    <!-- Page de Connexion -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <h1>🔐 Connexion Admin</h1>
+                    <p>Accédez au panel d'administration</p>
+                </div>
+                <form class="login-form" onsubmit="login(); return false;">
+                    <div class="form-group">
+                        <label for="username">Nom d'utilisateur</label>
+                        <input type="text" id="username" class="form-control" placeholder="admin" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Mot de passe</label>
+                        <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <span class="btn-icon">🚀</span>
+                        Se connecter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Admin (caché par défaut) -->
+    <div id="adminPanel" class="admin-container" style="display: none;">
+        <!-- Header Admin -->
+        <header class="admin-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="admin-logo">
+                        <img src="https://i.imgur.com/2T05Hat.jpeg" alt="DarkLabbb Logo" class="admin-logo-img">
+                    </div>
+                    <h1>Panel Administration</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-secondary" onclick="loadArticles()">
+                        <span class="btn-icon">👁️</span>
+                        Aperçu
+                    </button>
+                    <button class="btn btn-secondary" onclick="location.reload()">
+                        <span class="btn-icon">↗️</span>
+                        Déconnexion
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Admin -->
+        <nav class="admin-nav">
+            <div class="nav-content">
+                <button class="nav-item active" onclick="switchSection('articles')">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-text">Articles</span>
+                </button>
+                <button class="nav-item" onclick="switchSection('categories')">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Catégories</span>
+                </button>
+                <button class="nav-item" onclick="switchSection('info')">
+                    <span class="nav-icon">ℹ️</span>
+                    <span class="nav-text">Informations</span>
+                </button>
+                <button class="nav-item" onclick="switchSection('command-messages')">
+                    <span class="nav-icon">💬</span>
+                    <span class="nav-text">Messages de Commande</span>
+                </button>
+                <button class="nav-item" onclick="switchSection('github-config')">
+                    <span class="nav-icon">🔑</span>
+                    <span class="nav-text">Token GitHub</span>
+                </button>
+                <button class="nav-item" onclick="switchSection('github-setup')">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Config Token</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Contenu Principal -->
+        <main class="admin-main">
+            <!-- Section Articles -->
+            <section id="articles-section" class="admin-section active">
+                <div class="section-header">
+                    <h2>📄 Gestion des Articles</h2>
+                    <p>Créez et gérez vos articles de vente</p>
+                </div>
+                <div class="section-content">
+                    <div id="articlesContainer">
+                        <!-- Contenu chargé dynamiquement -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section Catégories -->
+            <section id="categories-section" class="admin-section">
+                <div class="section-header">
+                    <h2>📁 Gestion des Catégories</h2>
+                    <p>Organisez vos produits par catégories</p>
+                </div>
+                <div class="section-content">
+                    <div id="categoriesContainer">
+                        <!-- Contenu chargé dynamiquement -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section Informations -->
+            <section id="info-section" class="admin-section">
+                <div class="section-header">
+                    <h2>ℹ️ Informations Système</h2>
+                    <p>Statistiques et informations sur votre boutique</p>
+                </div>
+                <div class="section-content">
+                    <div id="infoContainer">
+                        <!-- Contenu chargé dynamiquement -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section Configuration GitHub -->
+            <section id="github-config-section" class="admin-section">
+                <div class="section-header">
+                    <h2>🔑 Configuration GitHub</h2>
+                    <p>Configurez votre token GitHub pour l'upload automatique des vidéos</p>
+                </div>
+                <div class="section-content">
+                    <div class="github-config-container">
+                        <div class="config-card">
+                            <h3>🔐 Token GitHub</h3>
+                            <p>Votre token est actuellement configuré avec localStorage. Il sera demandé une seule fois par navigateur.</p>
+                            
+                            <div class="token-status">
+                                <div class="status-indicator" id="tokenStatus">
+                                    <span class="status-icon">❓</span>
+                                    <span class="status-text">Vérification en cours...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="token-actions">
+                                <button class="btn btn-primary" onclick="testGitHubToken()">
+                                    <span class="btn-icon">🧪</span>
+                                    Tester le Token
+                                </button>
+                                <button class="btn btn-secondary" onclick="clearGitHubToken()">
+                                    <span class="btn-icon">🗑️</span>
+                                    Effacer le Token
+                                </button>
+                                <button class="btn btn-success" onclick="showTokenInstructions()">
+                                    <span class="btn-icon">📋</span>
+                                    Instructions
+                                </button>
+                            </div>
+                            
+                            <div class="token-info">
+                                <h4>ℹ️ Comment ça marche :</h4>
+                                <ul>
+                                    <li>✅ <strong>Première fois</strong> : Le site demande votre token</li>
+                                    <li>✅ <strong>Token sauvegardé</strong> : Dans le navigateur (localStorage)</li>
+                                    <li>✅ <strong>Prochaines fois</strong> : Plus besoin de retaper</li>
+                                    <li>✅ <strong>Fonctionne partout</strong> : PC, mobile, tablet</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section Configuration Token Direct -->
+            <section id="github-setup-section" class="admin-section">
+                <div class="section-header">
+                    <h2>⚙️ Configuration Token Direct</h2>
+                    <p>Ajoutez votre token GitHub directement dans cette interface</p>
+                </div>
+                <div class="section-content">
+                    <div class="github-setup-container">
+                        <div class="setup-card">
+                            <h3>🔧 Ajouter un Token GitHub</h3>
+                            <p>Collez votre token GitHub ici pour l'activer immédiatement</p>
+                            
+                            <div class="token-input-section">
+                                <label for="tokenInput">Token GitHub :</label>
+                                <div class="token-input-group">
+                                    <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="token-input">
+                                    <button class="btn btn-toggle" onclick="toggleTokenVisibility()">
+                                        <span class="btn-icon">👁️</span>
+                                    </button>
+                                </div>
+                                <small class="input-hint">Votre token sera sauvegardé localement dans le navigateur</small>
+                            </div>
+                            
+                            <div class="setup-actions">
+                                <button class="btn btn-primary" onclick="saveTokenDirectly()">
+                                    <span class="btn-icon">💾</span>
+                                    Sauvegarder le Token
+                                </button>
+                                <button class="btn btn-secondary" onclick="clearTokenInput()">
+                                    <span class="btn-icon">🗑️</span>
+                                    Effacer
+                                </button>
+                                <button class="btn btn-info" onclick="generateNewToken()">
+                                    <span class="btn-icon">🆕</span>
+                                    Créer un Nouveau Token
+                                </button>
+                            </div>
+                            
+                            <div class="setup-status" id="setupStatus">
+                                <div class="status-message">
+                                    <span class="status-icon">ℹ️</span>
+                                    <span class="status-text">Prêt à configurer votre token</span>
+                                </div>
+                            </div>
+                            
+                            <div class="setup-info">
+                                <h4>📋 Instructions :</h4>
+                                <ol>
+                                    <li>Allez sur <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings → Tokens</a></li>
+                                    <li>Cliquez sur "Generate new token (classic)"</li>
+                                    <li>Nom : "Upload Videos"</li>
+                                    <li>Permissions : cochez "repo" (Full control)</li>
+                                    <li>Copiez le token (ghp_...)</li>
+                                    <li>Collez-le dans le champ ci-dessus</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section Messages de Commande -->
+            <section id="command-messages-section" class="admin-section">
+                <div class="section-header">
+                    <h2>💬 Messages de Commande</h2>
+                    <p>Gérez les messages automatiques de commande</p>
+                </div>
+                <div class="section-content">
+                    <div id="commandMessagesContainer">
+                        <!-- Contenu chargé dynamiquement -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Ajout/Modification d'Article -->
+    <div id="articleModal" class="modal" style="display: none;" oncontextmenu="return false;">
+        <div class="modal-content" oncontextmenu="return false;">
+            <div class="modal-header">
+                <h3 id="modalTitle">Ajouter un Article</h3>
+                <button class="modal-close" onclick="closeModal()" oncontextmenu="return false;">✕</button>
+            </div>
+            
+            <form id="articleForm" onsubmit="saveArticle(event)" oncontextmenu="return false;">
+                <!-- Informations de base -->
+                <div class="form-group">
+                    <label for="articleTitle">Titre de l'article *</label>
+                    <input type="text" id="articleTitle" name="title" class="form-control" placeholder="Nom du produit" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="articleDescription">Description *</label>
+                    <textarea id="articleDescription" name="description" class="form-control" rows="4" placeholder="Description détaillée du produit" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="articlePrice">Prix (€) *</label>
+                    <input type="number" id="articlePrice" name="price" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="stockStatus">Statut de Stock</label>
+                    <select id="stockStatus" name="stock_status" class="form-control">
+                        <option value="EN_STOCK">EN STOCK</option>
+                        <option value="RUPTURE">RUPTURE DE STOCK</option>
+                        <option value="LIMITE">STOCK LIMITÉ</option>
+                    </select>
+                </div>
+
+                <!-- Zone de Drag & Drop pour l'image/vidéo -->
+                <div class="form-group">
+                    <label>Image/Vidéo de l'article *</label>
+                    
+                    <!-- Version Mobile -->
+                    <div id="mobileUpload" class="mobile-upload" style="display: none;">
+                        <input type="file" id="mobileMediaInput" accept="image/*,video/*" style="width: 100%; padding: 15px; border: 2px solid #007bff; border-radius: 8px; font-size: 16px;">
+                    </div>
+                    
+                    <!-- Version PC -->
+                    <div id="pcUpload" class="pc-upload">
+                        <div class="media-upload-zone" id="mediaUploadZone">
+                            <div class="upload-content">
+                                <span class="upload-icon">📷</span>
+                                <p>Glissez-déposez une image ou vidéo ici</p>
+                                <p class="upload-hint">Ou cliquez pour choisir un fichier</p>
+                                <p class="upload-formats">Formats: JPG, PNG, GIF, MP4, WEBM, MOV, AVI, MKV</p>
+                            </div>
+                            <input type="file" id="mediaInput" accept="image/*,video/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;">
+                        </div>
+                    </div>
+                    <div class="media-preview" id="mediaPreview" style="display: none;">
+                        <div class="preview-container">
+                            <img id="previewImg" src="" alt="Aperçu" style="display: none; max-width: 200px; max-height: 200px; border-radius: 8px;">
+                            <video id="previewVideo" src="" controls style="display: none; max-width: 200px; max-height: 200px; border-radius: 8px;"></video>
+                            <button type="button" class="remove-media" id="removeMedia">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                        <span class="btn-icon">❌</span>
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-icon">💾</span>
+                        Sauvegarder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="github-storage.js"></script>
+    <script src="admin-script.js"></script>
+</body>
+</html>
