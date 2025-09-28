@@ -3,7 +3,7 @@ console.log('🧪 === TEST TOKEN GITHUB ===');
 
 // Fonction de test du token
 async function testGitHubToken() {
-    const token = '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';
+    const token = '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';
     
     try {
         console.log('🔐 Test du token GitHub...');

@@ -6,7 +6,7 @@ const GITHUB_CONFIG = {
     branch: 'main',
     baseUrl: 'https://raw.githubusercontent.com',
     apiUrl: 'https://api.github.com',
-    token: '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'
+    token: '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'
 };
 
 // Fonction pour forcer l'utilisation du token
@@ -45,48 +45,70 @@ function setupGitHubStorage(username, repository = 'darklabbb-shop-images') {
     };
 }
 
-// Upload vers GitHub via API
+// Upload vers GitHub via API avec fallback
 async function uploadToGitHub(file, fileName, githubToken = null) {
     try {
-        // Token GitHub fixe - pas de vérification
-        const token = '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';
-        
         console.log('📤 Upload vers GitHub:', fileName);
         
-        // Convertir le fichier en base64
-        const base64Content = await fileToBase64(file);
-        
-        // URL de l'API GitHub
-        const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}/contents/${fileName}`;
-        
-        // Données pour l'upload
-        const uploadData = {
-            message: `Upload image: ${fileName}`,
-            content: base64Content,
-            branch: GITHUB_CONFIG.branch
-        };
-        
-        // Upload via API GitHub
-        const response = await fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `token ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify(uploadData)
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(`Erreur GitHub API: ${error.message}`);
+        // Essayer d'abord l'upload automatique avec le token
+        try {
+            const token = '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';
+            console.log('🔐 Test du token GitHub...');
+            
+            // Test du token d'abord
+            const testResponse = await fetch('https://api.github.com/user', {
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (!testResponse.ok) {
+                throw new Error('Token GitHub invalide ou expiré');
+            }
+            
+            console.log('✅ Token GitHub valide, upload en cours...');
+            
+            // Convertir le fichier en base64
+            const base64Content = await fileToBase64(file);
+            
+            // URL de l'API GitHub
+            const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}/contents/${fileName}`;
+            
+            // Données pour l'upload
+            const uploadData = {
+                message: `Upload: ${fileName}`,
+                content: base64Content,
+                branch: GITHUB_CONFIG.branch
+            };
+            
+            // Upload via API GitHub
+            const response = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify(uploadData)
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(`Erreur GitHub API: ${error.message}`);
+            }
+            
+            const result = await response.json();
+            const publicUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}/main/${fileName}`;
+            
+            console.log('✅ Upload automatique réussi:', publicUrl);
+            return publicUrl;
+            
+        } catch (tokenError) {
+            console.log('⚠️ Token invalide, passage au mode manuel');
+            console.log('🔑 Créez un nouveau token: createNewGitHubToken()');
+            throw tokenError;
         }
-        
-        const result = await response.json();
-        const publicUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}/main/${fileName}`;
-        
-        console.log('✅ Upload réussi:', publicUrl);
-        return publicUrl;
         
     } catch (error) {
         console.error('❌ Erreur upload GitHub:', error);
