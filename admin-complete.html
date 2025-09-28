@@ -692,6 +692,19 @@
             transition: all 0.3s ease;
             cursor: pointer;
             position: relative;
+            overflow: hidden;
+        }
+        
+        /* Input file invisible mais cliquable sur mobile */
+        .media-upload-zone input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
         }
 
         .media-upload-zone:hover {
@@ -3596,15 +3609,15 @@
 
             // Clic sur la zone - avec gestion mobile améliorée
             newUploadZone.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Sur mobile, éviter les conflits avec le clavier
+                // Ne pas bloquer l'ouverture de la galerie
                 if (isMobile()) {
+                    // Sur mobile, laisser passer l'événement pour ouvrir la galerie
                     setTimeout(() => {
                         newMediaInput.click();
-                    }, 100);
+                    }, 50);
                 } else {
+                    e.preventDefault();
+                    e.stopPropagation();
                     newMediaInput.click();
                 }
             });
@@ -3634,17 +3647,16 @@
 
             // Sélection de fichier - avec gestion mobile améliorée
             newMediaInput.addEventListener('change', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                
                 if (e.target.files.length > 0) {
-                    // Délai pour éviter les conflits sur mobile
+                    // Sur mobile, ne pas bloquer le traitement du fichier
                     if (isMobile()) {
+                        // Délai réduit pour mobile
                         setTimeout(() => {
                             handleMediaFile(e.target.files[0]);
-                        }, 200);
+                        }, 100);
                     } else {
+                        e.preventDefault();
+                        e.stopPropagation();
                         handleMediaFile(e.target.files[0]);
                     }
                 }
@@ -3681,10 +3693,13 @@
             if (isMobile()) {
                 const modal = document.getElementById('articleModal');
                 if (modal) {
-                    modal.style.pointerEvents = 'none';
+                    // Délai réduit pour ne pas bloquer l'interface
                     setTimeout(() => {
-                        modal.style.pointerEvents = 'auto';
-                    }, 1000);
+                        modal.style.pointerEvents = 'none';
+                        setTimeout(() => {
+                            modal.style.pointerEvents = 'auto';
+                        }, 500);
+                    }, 200);
                 }
             }
 
@@ -5336,6 +5351,16 @@ Ce service n'est pas disponible pour le moment ⛔`,
                 if (mediaInput) {
                     mediaInput.setAttribute('capture', 'environment');
                     mediaInput.setAttribute('accept', 'image/*,video/*');
+                    
+                    // S'assurer que l'input fonctionne sur mobile
+                    mediaInput.style.display = 'block';
+                    mediaInput.style.position = 'absolute';
+                    mediaInput.style.top = '0';
+                    mediaInput.style.left = '0';
+                    mediaInput.style.width = '100%';
+                    mediaInput.style.height = '100%';
+                    mediaInput.style.opacity = '0';
+                    mediaInput.style.zIndex = '10';
                 }
             }
         }
