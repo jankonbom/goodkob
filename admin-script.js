@@ -244,10 +244,14 @@ function handleMediaFile(file) {
     const previewImg = document.getElementById('previewImg');
     const previewVideo = document.getElementById('previewVideo');
     const uploadZone = document.getElementById('mediaUploadZone');
+    const debugPanel = document.getElementById('debugPanel');
 
     // Masquer la zone d'upload et afficher l'aperçu
     uploadZone.style.display = 'none';
     preview.style.display = 'block';
+    
+    // Mettre à jour le panel debug
+    updateDebugPanel(file);
 
     if (file.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -329,14 +333,17 @@ async function saveArticle(event) {
             throw new Error('Token GitHub non trouvé');
         }
         
-        // Upload vers GitHub
+        // Upload vers GitHub avec logs debug
+        addDebugLog('Début de l\'upload vers GitHub...', 'info');
         const mediaUrl = await uploadToGitHub(selectedMediaFile);
         
         if (mediaUrl) {
+            addDebugLog('Upload réussi ! URL: ' + mediaUrl, 'success');
             showNotification('Article sauvegardé avec succès !', 'success');
             closeModal();
             loadArticles();
         } else {
+            addDebugLog('Échec de l\'upload', 'error');
             showNotification('Erreur lors de l\'upload', 'error');
         }
     } catch (error) {
@@ -642,6 +649,103 @@ function loadCommandMessages() {
             </div>
         `;
     }
+}
+
+// ===== FONCTIONS DEBUG PANEL =====
+function updateDebugPanel(file) {
+    // Mettre à jour les informations mobiles
+    document.getElementById('debugBrowser').textContent = navigator.userAgent.includes('Safari') ? 'Safari Mobile' : 'Autre';
+    document.getElementById('debugWidth').textContent = window.innerWidth;
+    document.getElementById('debugHeight').textContent = window.innerHeight;
+    document.getElementById('debugUserAgent').textContent = navigator.userAgent.substring(0, 50) + '...';
+    
+    // Mettre à jour les informations du fichier
+    if (file) {
+        document.getElementById('debugFileName').textContent = file.name;
+        document.getElementById('debugFileSize').textContent = formatFileSize(file.size);
+        document.getElementById('debugFileType').textContent = file.type;
+        document.getElementById('debugFileDate').textContent = new Date(file.lastModified).toLocaleString();
+    }
+    
+    // Mettre à jour les informations du token
+    const token = localStorage.getItem('github_token_imageforko');
+    document.getElementById('debugTokenStatus').textContent = token ? '✅ Oui' : '❌ Non';
+    document.getElementById('debugTokenPreview').textContent = token ? token.substring(0, 8) + '...' : 'Aucun';
+    
+    // Afficher le panel debug sur mobile Safari
+    if (isMobile() && navigator.userAgent.includes('Safari')) {
+        document.getElementById('debugPanel').style.display = 'block';
+    }
+}
+
+function toggleDebugPanel() {
+    const panel = document.getElementById('debugPanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function addDebugLog(message, type = 'info') {
+    const logsDiv = document.getElementById('debugLogs');
+    const timestamp = new Date().toLocaleTimeString();
+    const color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#28a745' : '#17a2b8';
+    const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+    
+    logsDiv.innerHTML += `<div style="color: ${color}; margin: 2px 0;">[${timestamp}] ${icon} ${message}</div>`;
+    logsDiv.scrollTop = logsDiv.scrollHeight;
+}
+
+function clearDebugLogs() {
+    document.getElementById('debugLogs').innerHTML = '<p>Logs effacés...</p>';
+}
+
+function testUpload() {
+    if (!selectedMediaFile) {
+        addDebugLog('Aucun fichier sélectionné', 'error');
+        return;
+    }
+    
+    addDebugLog('Début du test d\'upload...', 'info');
+    
+    // Simuler l'upload
+    setTimeout(() => {
+        addDebugLog('Vérification du token...', 'info');
+        const token = localStorage.getItem('github_token_imageforko');
+        if (!token) {
+            addDebugLog('Token manquant !', 'error');
+            return;
+        }
+        addDebugLog('Token trouvé: ' + token.substring(0, 8) + '...', 'success');
+        
+        setTimeout(() => {
+            addDebugLog('Test d\'upload terminé', 'success');
+        }, 1000);
+    }, 500);
+}
+
+function copyDebugInfo() {
+    const info = {
+        browser: navigator.userAgent,
+        screen: `${window.innerWidth}x${window.innerHeight}`,
+        file: selectedMediaFile ? {
+            name: selectedMediaFile.name,
+            size: selectedMediaFile.size,
+            type: selectedMediaFile.type
+        } : null,
+        token: localStorage.getItem('github_token_imageforko') ? 'Présent' : 'Manquant'
+    };
+    
+    navigator.clipboard.writeText(JSON.stringify(info, null, 2)).then(() => {
+        addDebugLog('Informations copiées dans le presse-papiers', 'success');
+    }).catch(() => {
+        addDebugLog('Erreur lors de la copie', 'error');
+    });
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 // ===== INITIALISATION =====
