@@ -8,15 +8,15 @@ const GITHUB_CONFIG = {
     apiUrl: 'https://api.github.com',
     // Token sécurisé - récupéré depuis les variables d'environnement
     getToken: function() {
-        // Token depuis les secrets GitHub (sécurisé)
+        // Token depuis les secrets GitHub uniquement
         const token = window.API_TOKEN;
         
-        if (window.API_TOKEN) {
-            console.log('🔐 Secret GitHub utilisé:', token.substring(0, 8) + '...');
-        } else {
-            console.log('❌ Aucun token GitHub trouvé');
-            throw new Error('Token GitHub manquant');
+        if (!token) {
+            console.log('❌ Token manquant. Le secret API_TOKEN doit être configuré');
+            throw new Error('Token GitHub manquant - Configurez le secret API_TOKEN');
         }
+        
+        console.log('🔐 Secret GitHub utilisé:', token.substring(0, 8) + '...');
         console.log('📁 Upload vers: jankonbom/imageforko');
         return token;
     }
