@@ -167,18 +167,35 @@ function setupMediaUpload() {
         
         const mobileInput = document.getElementById('mobileMediaInput');
         if (mobileInput) {
-            // Supprimer les anciens événements
-            mobileInput.replaceWith(mobileInput.cloneNode(true));
-            const newMobileInput = document.getElementById('mobileMediaInput');
+        // Supprimer les anciens événements
+        mobileInput.replaceWith(mobileInput.cloneNode(true));
+        const newMobileInput = document.getElementById('mobileMediaInput');
+        
+        // Optimiser l'input mobile
+        newMobileInput.setAttribute('accept', 'image/*,video/*');
+        newMobileInput.style.fontSize = '16px';
+        newMobileInput.removeAttribute('capture');
+        
+        newMobileInput.addEventListener('change', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('📱 Événement change mobile déclenché');
             
-            newMobileInput.addEventListener('change', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (e.target.files && e.target.files.length > 0) {
-                    console.log('📱 Fichier sélectionné mobile:', e.target.files[0].name);
+            if (e.target.files && e.target.files.length > 0) {
+                console.log('📱 Fichier sélectionné mobile:', e.target.files[0].name);
+                // Délai pour éviter les conflits sur mobile
+                setTimeout(() => {
                     handleMediaFile(e.target.files[0]);
-                }
-            });
+                }, 200);
+            } else {
+                console.log('📱 Aucun fichier sélectionné');
+            }
+        });
+        
+        // Ajouter un événement click pour debug
+        newMobileInput.addEventListener('click', (e) => {
+            console.log('📱 Clic sur input mobile');
+        });
         }
     } else {
         // Version PC
@@ -919,6 +936,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialiser la console debug
     refreshDebugInfo();
     
+    // Ajouter un bouton debug mobile visible
+    addMobileDebugButton();
+    
     // Ajouter les styles d'animation
     const style = document.createElement('style');
     style.textContent = `
@@ -933,3 +953,49 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
     document.head.appendChild(style);
 });
+
+// ===== BOUTON DEBUG MOBILE =====
+function addMobileDebugButton() {
+    // Vérifier si on est sur mobile
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    
+    if (isMobileDevice) {
+        // Créer un bouton debug flottant pour mobile
+        const debugBtn = document.createElement('button');
+        debugBtn.innerHTML = '🐛 DEBUG';
+        debugBtn.id = 'mobileDebugBtn';
+        debugBtn.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+        `;
+        
+        debugBtn.addEventListener('click', function() {
+            switchSection('debug');
+        });
+        
+        debugBtn.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1)';
+            this.style.boxShadow = '0 6px 16px rgba(255, 107, 107, 0.6)';
+        });
+        
+        debugBtn.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = '0 4px 12px rgba(255, 107, 107, 0.4)';
+        });
+        
+        document.body.appendChild(debugBtn);
+        console.log('🐛 Bouton debug mobile ajouté');
+    }
+}

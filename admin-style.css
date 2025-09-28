@@ -435,6 +435,14 @@ body {
     display: block;
 }
 
+.mobile-upload-container {
+    background: var(--bg-secondary);
+    border: 2px solid #007bff;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px 0;
+}
+
 .mobile-upload input[type="file"] {
     width: 100%;
     padding: 15px;
@@ -443,6 +451,27 @@ body {
     font-size: 16px;
     background: #f8f9fa;
     cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mobile-upload input[type="file"]:hover {
+    background: #e9ecef;
+    border-color: #0056b3;
+}
+
+.mobile-upload-info {
+    margin-top: 10px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.mobile-upload-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.mobile-upload-info strong {
+    color: var(--accent-blue);
 }
 
 /* PC Upload */
