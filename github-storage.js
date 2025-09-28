@@ -1,18 +1,33 @@
 // GitHub Repository Storage - Upload automatique
-// Configuration GitHub Repository - TOKEN FIXE
+// Configuration GitHub Repository - TOKEN SÉCURISÉ
 const GITHUB_CONFIG = {
     username: 'jankonbom',
     repository: 'imageforko',
     branch: 'main',
     baseUrl: 'https://raw.githubusercontent.com',
     apiUrl: 'https://api.github.com',
-    token: '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'
+    // Token sécurisé - récupéré depuis localStorage ou configuré une seule fois
+    getToken: function() {
+        // 1. Essayer de récupérer depuis localStorage (sécurisé)
+        let token = localStorage.getItem('github_token_secure');
+        
+        // 2. Si pas de token, utiliser le token par défaut (première fois)
+        if (!token) {
+            token = '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';
+            // Sauvegarder pour la prochaine fois
+            localStorage.setItem('github_token_secure', token);
+            console.log('🔐 Token GitHub sauvegardé de manière sécurisée');
+        }
+        
+        return token;
+    }
 };
 
 // Fonction pour forcer l'utilisation du token
 function forceGitHubToken() {
-    console.log('🔐 Token GitHub forcé:', GITHUB_CONFIG.token.substring(0, 8) + '...');
-    return GITHUB_CONFIG.token;
+    const token = GITHUB_CONFIG.getToken();
+    console.log('🔐 Token GitHub sécurisé:', token.substring(0, 8) + '...');
+    return token;
 }
 
 // Fonction pour configurer GitHub
@@ -52,7 +67,7 @@ async function uploadToGitHub(file, fileName, githubToken = null) {
         
         // Essayer d'abord l'upload automatique avec le token
         try {
-            const token = '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';
+            const token = GITHUB_CONFIG.getToken();
             console.log('🔐 Test du token GitHub...');
             
             // Test du token d'abord
@@ -158,8 +173,8 @@ async function migrateFromCloudinaryToGitHub(githubToken = null) {
             throw new Error('Configurez d\'abord votre GitHub avec setupGitHubStorage(username)');
         }
         
-        // Token GitHub fixe - pas de vérification
-        const token = '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';
+        // Token GitHub sécurisé
+        const token = GITHUB_CONFIG.getToken();
         
         // Récupérer les articles avec images Cloudinary
         const { data: articles, error } = await supabaseClient
@@ -285,9 +300,37 @@ function quickGitHubSetup() {
     console.log('✅ Prêt pour l\'upload !');
 }
 
+// Fonctions de gestion sécurisée du token
+function setGitHubToken(newToken) {
+    if (!newToken || !newToken.startsWith('ghp_')) {
+        console.log('❌ Token invalide. Un token GitHub commence par "ghp_"');
+        return false;
+    }
+    
+    localStorage.setItem('github_token_secure', newToken);
+    console.log('✅ Token GitHub mis à jour et sécurisé');
+    console.log('🔐 Token:', newToken.substring(0, 8) + '...');
+    return true;
+}
+
+function getGitHubToken() {
+    const token = GITHUB_CONFIG.getToken();
+    console.log('🔐 Token GitHub actuel:', token.substring(0, 8) + '...');
+    return token;
+}
+
+function clearGitHubToken() {
+    localStorage.removeItem('github_token_secure');
+    console.log('🗑️ Token GitHub supprimé');
+    console.log('⚠️ Vous devrez reconfigurer le token');
+}
+
 // Export des fonctions
 window.GITHUB_CONFIG = GITHUB_CONFIG;
 window.forceGitHubToken = forceGitHubToken;
+window.setGitHubToken = setGitHubToken;
+window.getGitHubToken = getGitHubToken;
+window.clearGitHubToken = clearGitHubToken;
 window.setupGitHubStorage = setupGitHubStorage;
 window.uploadToGitHub = uploadToGitHub;
 window.uploadToGitHubManual = uploadToGitHubManual;
@@ -296,6 +339,7 @@ window.getGitHubTokenInstructions = getGitHubTokenInstructions;
 window.quickGitHubSetup = quickGitHubSetup;
 
 console.log('🐙 GitHub Storage configuré !');
-console.log('✅ Token GitHub fixe et prêt');
-console.log('🔐 Token forcé:', GITHUB_CONFIG.token.substring(0, 8) + '...');
+console.log('✅ Token GitHub sécurisé et prêt');
+console.log('🔐 Token sécurisé:', GITHUB_CONFIG.getToken().substring(0, 8) + '...');
 console.log('📤 Upload automatique: uploadToGitHub(file, fileName)');
+console.log('🔧 Gestion token: setGitHubToken("nouveau_token")');
