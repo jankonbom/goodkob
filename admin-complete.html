@@ -2683,10 +2683,10 @@
                     <div class="media-upload-zone" id="mediaUploadZone">
                         <div class="upload-content">
                             <span class="upload-icon">📷</span>
-                            <p>Glissez-déposez une image ou vidéo ici</p>
+                            <p>Cliquez ici pour choisir une image ou vidéo</p>
                             <p class="upload-hint">Formats acceptés: JPG, PNG, GIF, MP4, WEBM, MOV, AVI, MKV</p>
                         </div>
-                        <input type="file" id="mediaInput" accept="image/*,video/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;">
+                        <input type="file" id="mediaInput" accept="image/*,video/*" style="display: block; width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 8px;">
                     </div>
                     <div class="media-preview" id="mediaPreview" style="display: none;">
                         <div class="preview-container">
@@ -3624,14 +3624,12 @@
             const newMediaInput = document.getElementById('mediaInput');
             const newRemoveMedia = document.getElementById('removeMedia');
 
-            // Clic sur la zone - avec gestion mobile améliorée
+            // Clic sur la zone - déclencher l'input file
             newUploadZone.addEventListener('click', (e) => {
-                // Sur mobile, ne pas bloquer l'ouverture de la galerie
-                if (!isMobile()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                // L'input file va gérer l'ouverture de la galerie
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🖱️ Clic sur la zone d\'upload');
+                newMediaInput.click();
             });
 
             // Drag & Drop
@@ -3657,12 +3655,14 @@
                 }
             });
 
-            // Sélection de fichier - avec gestion mobile améliorée
+            // Sélection de fichier - traitement immédiat
             newMediaInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
+                console.log('📁 Événement change détecté');
+                if (e.target.files && e.target.files.length > 0) {
                     console.log('📱 Fichier sélectionné:', e.target.files[0].name);
-                    // Traitement immédiat du fichier
                     handleMediaFile(e.target.files[0]);
+                } else {
+                    console.log('❌ Aucun fichier sélectionné');
                 }
             });
 
@@ -5356,17 +5356,18 @@ Ce service n'est pas disponible pour le moment ⛔`,
                     mediaInput.setAttribute('capture', 'environment');
                     mediaInput.setAttribute('accept', 'image/*,video/*');
                     
-                    // S'assurer que l'input fonctionne sur mobile
-                    mediaInput.style.position = 'absolute';
-                    mediaInput.style.top = '0';
-                    mediaInput.style.left = '0';
+                    // Configuration forcée pour mobile
+                    mediaInput.style.display = 'block';
                     mediaInput.style.width = '100%';
-                    mediaInput.style.height = '100%';
-                    mediaInput.style.opacity = '0';
-                    mediaInput.style.zIndex = '10';
-                    mediaInput.style.cursor = 'pointer';
+                    mediaInput.style.padding = '10px';
+                    mediaInput.style.marginTop = '10px';
+                    mediaInput.style.border = '1px solid #ccc';
+                    mediaInput.style.borderRadius = '8px';
+                    mediaInput.style.fontSize = '16px';
+                    mediaInput.style.pointerEvents = 'auto';
                     
-                    console.log('📱 Input file configuré pour mobile');
+                    console.log('📱 Input file configuré:', mediaInput);
+                    console.log('📱 Style appliqué:', mediaInput.style.cssText);
                 }
             }
         }
