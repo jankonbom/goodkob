@@ -313,8 +313,21 @@ async function saveArticle(event) {
         return;
     }
     
+    // Vérifier si le token existe avant l'upload
+    const token = localStorage.getItem('github_token_imageforko');
+    if (!token) {
+        showNotification('❌ Token GitHub manquant. Configurez-le d\'abord dans l\'onglet "Config Token"', 'error');
+        return;
+    }
+    
     try {
         showNotification('Upload en cours...', 'info');
+        
+        // Vérifier que le token est bien chargé
+        const tokenCheck = localStorage.getItem('github_token_imageforko');
+        if (!tokenCheck) {
+            throw new Error('Token GitHub non trouvé');
+        }
         
         // Upload vers GitHub
         const mediaUrl = await uploadToGitHub(selectedMediaFile);
@@ -328,7 +341,7 @@ async function saveArticle(event) {
         }
     } catch (error) {
         console.error('Erreur lors de la sauvegarde:', error);
-        showNotification('Erreur lors de la sauvegarde', 'error');
+        showNotification('Erreur lors de la sauvegarde: ' + error.message, 'error');
     }
 }
 

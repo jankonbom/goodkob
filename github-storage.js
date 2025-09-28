@@ -6,20 +6,27 @@ const GITHUB_CONFIG = {
     branch: 'main',
     baseUrl: 'https://raw.githubusercontent.com',
     apiUrl: 'https://api.github.com',
-    // Token sécurisé - récupéré depuis les variables d'environnement
+    // Token sécurisé - récupéré depuis localStorage
     getToken: function() {
-        // Solution mobile : Token dans localStorage (une seule fois)
+        // Vérifier d'abord dans localStorage
         let token = localStorage.getItem('github_token_imageforko');
         
         if (!token) {
-            // Demander le token une seule fois
+            // Si pas de token, demander à l'utilisateur
             token = prompt('🔑 Entrez votre token GitHub pour imageforko:');
-            if (token) {
-                localStorage.setItem('github_token_imageforko', token);
+            if (token && token.trim()) {
+                localStorage.setItem('github_token_imageforko', token.trim());
                 console.log('✅ Token sauvegardé pour les prochaines fois');
             } else {
                 throw new Error('Token GitHub requis pour l\'upload');
             }
+        }
+        
+        // Vérifier que le token est valide
+        if (!token.startsWith('ghp_')) {
+            console.error('❌ Format de token invalide');
+            localStorage.removeItem('github_token_imageforko');
+            throw new Error('Format de token invalide. Le token doit commencer par "ghp_"');
         }
         
         console.log('🔐 Token utilisé:', token.substring(0, 8) + '...');
@@ -70,8 +77,19 @@ async function uploadToGitHub(file, fileName, githubToken = null) {
     try {
         console.log('📤 Upload vers GitHub:', fileName);
         
-        // Upload direct avec le token
-        const token = GITHUB_CONFIG.getToken();
+        // Vérifier que le fichier existe
+        if (!file) {
+            throw new Error('Aucun fichier sélectionné');
+        }
+        
+        // Récupérer le token avec vérification
+        let token;
+        try {
+            token = GITHUB_CONFIG.getToken();
+        } catch (tokenError) {
+            console.error('❌ Erreur token:', tokenError.message);
+            throw new Error('Token GitHub manquant ou invalide. Configurez-le d\'abord.');
+        }
         
         // Convertir le fichier en base64
         const base64Content = await fileToBase64(file);
@@ -86,16 +104,47 @@ async function uploadToGitHub(file, fileName, githubToken = null) {
             branch: GITHUB_CONFIG.branch
         };
         
-        // Upload via API GitHub
-        const response = await fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `token ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify(uploadData)
-        });
+        console.log('📤 Tentative d\'upload vers GitHub...');
+        
+        // Upload via API GitHub avec retry
+        let response;
+        let attempts = 0;
+        const maxAttempts = 2;
+        
+        while (attempts < maxAttempts) {
+            try {
+                response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify(uploadData)
+                });
+                
+                if (response.ok) {
+                    break;
+                } else if (response.status === 401) {
+                    console.error('❌ Token invalide');
+                    localStorage.removeItem('github_token_imageforko');
+                    throw new Error('Token GitHub invalide ou expiré');
+                }
+                
+                attempts++;
+                if (attempts < maxAttempts) {
+                    console.log(`🔄 Tentative ${attempts + 1}/${maxAttempts}...`);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            } catch (fetchError) {
+                attempts++;
+                if (attempts >= maxAttempts) {
+                    throw fetchError;
+                }
+                console.log(`🔄 Erreur réseau, tentative ${attempts + 1}/${maxAttempts}...`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
         
         if (!response.ok) {
             const error = await response.json();
