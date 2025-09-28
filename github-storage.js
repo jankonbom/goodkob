@@ -2,17 +2,22 @@
 // Configuration GitHub Repository - TOKEN SÉCURISÉ
 const GITHUB_CONFIG = {
     username: 'jankonbom',
-    repository: 'imageforko',
+    repository: 'imageforko', // Repository pour stocker les vidéos
     branch: 'main',
     baseUrl: 'https://raw.githubusercontent.com',
     apiUrl: 'https://api.github.com',
     // Token sécurisé - récupéré depuis les variables d'environnement
     getToken: function() {
-        // Token fixe - fonctionne partout
-        const token = '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';
+        // Token depuis les secrets GitHub (sécurisé)
+        const token = window.API_TOKEN;
         
-        console.log('🔐 Token GitHub utilisé:', token.substring(0, 8) + '...');
-        console.log('📱 Compatible mobile, PC et tablette');
+        if (window.API_TOKEN) {
+            console.log('🔐 Secret GitHub utilisé:', token.substring(0, 8) + '...');
+        } else {
+            console.log('❌ Aucun token GitHub trouvé');
+            throw new Error('Token GitHub manquant');
+        }
+        console.log('📁 Upload vers: jankonbom/imageforko');
         return token;
     }
 };
