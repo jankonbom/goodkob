@@ -1999,18 +1999,179 @@
             box-shadow: 0 4px 12px rgba(248, 81, 73, 0.3);
         }
 
-        /* Responsive pour la section GitHub */
+        /* ===== STYLES SECTION GITHUB SETUP ===== */
+        .github-setup-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .setup-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .setup-card h3 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setup-card p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .token-input-section {
+            margin: 25px 0;
+        }
+
+        .token-input-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .token-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .token-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: border-color 0.3s ease;
+        }
+
+        .token-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        .btn-toggle {
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-toggle:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        .input-hint {
+            display: block;
+            margin-top: 5px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .setup-actions {
+            display: flex;
+            gap: 12px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .setup-actions .btn {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .setup-status {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-message {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .status-icon {
+            font-size: 18px;
+        }
+
+        .status-text {
+            color: var(--text-primary);
+        }
+
+        .setup-info {
+            margin-top: 25px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .setup-info h4 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .setup-info ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .setup-info li {
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .setup-info a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        .setup-info a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive pour les sections GitHub */
         @media (max-width: 768px) {
-            .token-actions {
+            .token-actions, .setup-actions {
                 flex-direction: column;
             }
             
-            .token-actions .btn {
+            .token-actions .btn, .setup-actions .btn {
                 min-width: auto;
             }
             
-            .config-card {
+            .config-card, .setup-card {
                 padding: 20px;
+            }
+            
+            .token-input-group {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
     </style>
@@ -2081,10 +2242,14 @@
                 <span class="nav-icon">💬</span>
                 <span class="nav-text">Messages de Commande</span>
             </button>
-            <button class="nav-item" onclick="switchSection('github-config')">
-                <span class="nav-icon">🔑</span>
-                <span class="nav-text">Token GitHub</span>
-            </button>
+                <button class="nav-item" onclick="switchSection('github-config')">
+                    <span class="nav-icon">🔑</span>
+                    <span class="nav-text">Token GitHub</span>
+                </button>
+                <button class="nav-item" onclick="switchSection('github-setup')">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Config Token</span>
+                </button>
         </div>
     </nav>
 
@@ -2538,53 +2703,114 @@
             </div>
         </section>
 
-        <!-- Section Configuration GitHub -->
-        <section id="github-config-section" class="admin-section">
-            <div class="section-header">
-                <h2>🔑 Configuration GitHub</h2>
-                <p>Configurez votre token GitHub pour l'upload automatique des vidéos</p>
-            </div>
-            <div class="section-content">
-                <div class="github-config-container">
-                    <div class="config-card">
-                        <h3>🔐 Token GitHub</h3>
-                        <p>Votre token est actuellement configuré avec localStorage. Il sera demandé une seule fois par navigateur.</p>
-                        
-                        <div class="token-status">
-                            <div class="status-indicator" id="tokenStatus">
-                                <span class="status-icon">❓</span>
-                                <span class="status-text">Vérification en cours...</span>
+            <!-- Section Configuration GitHub -->
+            <section id="github-config-section" class="admin-section">
+                <div class="section-header">
+                    <h2>🔑 Configuration GitHub</h2>
+                    <p>Configurez votre token GitHub pour l'upload automatique des vidéos</p>
+                </div>
+                <div class="section-content">
+                    <div class="github-config-container">
+                        <div class="config-card">
+                            <h3>🔐 Token GitHub</h3>
+                            <p>Votre token est actuellement configuré avec localStorage. Il sera demandé une seule fois par navigateur.</p>
+                            
+                            <div class="token-status">
+                                <div class="status-indicator" id="tokenStatus">
+                                    <span class="status-icon">❓</span>
+                                    <span class="status-text">Vérification en cours...</span>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="token-actions">
-                            <button class="btn btn-primary" onclick="testGitHubToken()">
-                                <span class="btn-icon">🧪</span>
-                                Tester le Token
-                            </button>
-                            <button class="btn btn-secondary" onclick="clearGitHubToken()">
-                                <span class="btn-icon">🗑️</span>
-                                Effacer le Token
-                            </button>
-                            <button class="btn btn-success" onclick="showTokenInstructions()">
-                                <span class="btn-icon">📋</span>
-                                Instructions
-                            </button>
-                        </div>
-                        
-                        <div class="token-info">
-                            <h4>ℹ️ Comment ça marche :</h4>
-                            <ul>
-                                <li>✅ <strong>Première fois</strong> : Le site demande votre token</li>
-                                <li>✅ <strong>Token sauvegardé</strong> : Dans le navigateur (localStorage)</li>
-                                <li>✅ <strong>Prochaines fois</strong> : Plus besoin de retaper</li>
-                                <li>✅ <strong>Fonctionne partout</strong> : PC, mobile, tablet</li>
-                            </ul>
+                            
+                            <div class="token-actions">
+                                <button class="btn btn-primary" onclick="testGitHubToken()">
+                                    <span class="btn-icon">🧪</span>
+                                    Tester le Token
+                                </button>
+                                <button class="btn btn-secondary" onclick="clearGitHubToken()">
+                                    <span class="btn-icon">🗑️</span>
+                                    Effacer le Token
+                                </button>
+                                <button class="btn btn-success" onclick="showTokenInstructions()">
+                                    <span class="btn-icon">📋</span>
+                                    Instructions
+                                </button>
+                            </div>
+                            
+                            <div class="token-info">
+                                <h4>ℹ️ Comment ça marche :</h4>
+                                <ul>
+                                    <li>✅ <strong>Première fois</strong> : Le site demande votre token</li>
+                                    <li>✅ <strong>Token sauvegardé</strong> : Dans le navigateur (localStorage)</li>
+                                    <li>✅ <strong>Prochaines fois</strong> : Plus besoin de retaper</li>
+                                    <li>✅ <strong>Fonctionne partout</strong> : PC, mobile, tablet</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+
+            <!-- Section Configuration Token Direct -->
+            <section id="github-setup-section" class="admin-section">
+                <div class="section-header">
+                    <h2>⚙️ Configuration Token Direct</h2>
+                    <p>Ajoutez votre token GitHub directement dans cette interface</p>
+                </div>
+                <div class="section-content">
+                    <div class="github-setup-container">
+                        <div class="setup-card">
+                            <h3>🔧 Ajouter un Token GitHub</h3>
+                            <p>Collez votre token GitHub ici pour l'activer immédiatement</p>
+                            
+                            <div class="token-input-section">
+                                <label for="tokenInput">Token GitHub :</label>
+                                <div class="token-input-group">
+                                    <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="token-input">
+                                    <button class="btn btn-toggle" onclick="toggleTokenVisibility()">
+                                        <span class="btn-icon">👁️</span>
+                                    </button>
+                                </div>
+                                <small class="input-hint">Votre token sera sauvegardé localement dans le navigateur</small>
+                            </div>
+                            
+                            <div class="setup-actions">
+                                <button class="btn btn-primary" onclick="saveTokenDirectly()">
+                                    <span class="btn-icon">💾</span>
+                                    Sauvegarder le Token
+                                </button>
+                                <button class="btn btn-secondary" onclick="clearTokenInput()">
+                                    <span class="btn-icon">🗑️</span>
+                                    Effacer
+                                </button>
+                                <button class="btn btn-info" onclick="generateNewToken()">
+                                    <span class="btn-icon">🆕</span>
+                                    Créer un Nouveau Token
+                                </button>
+                            </div>
+                            
+                            <div class="setup-status" id="setupStatus">
+                                <div class="status-message">
+                                    <span class="status-icon">ℹ️</span>
+                                    <span class="status-text">Prêt à configurer votre token</span>
+                                </div>
+                            </div>
+                            
+                            <div class="setup-info">
+                                <h4>📋 Instructions :</h4>
+                                <ol>
+                                    <li>Allez sur <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings → Tokens</a></li>
+                                    <li>Cliquez sur "Generate new token (classic)"</li>
+                                    <li>Nom : "Upload Videos"</li>
+                                    <li>Permissions : cochez "repo" (Full control)</li>
+                                    <li>Copiez le token (ghp_...)</li>
+                                    <li>Collez-le dans le champ ci-dessus</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
         <!-- Section Messages de Commande -->
         <section id="command-messages-section" class="admin-section">
@@ -5558,6 +5784,83 @@ Ce service n'est pas disponible pour le moment ⛔`,
             `;
             
             alert(instructions);
+        }
+
+        // ===== FONCTIONS TOKEN DIRECT =====
+        
+        // Basculer la visibilité du token
+        function toggleTokenVisibility() {
+            const tokenInput = document.getElementById('tokenInput');
+            const toggleBtn = document.querySelector('.btn-toggle .btn-icon');
+            
+            if (tokenInput.type === 'password') {
+                tokenInput.type = 'text';
+                toggleBtn.textContent = '🙈';
+            } else {
+                tokenInput.type = 'password';
+                toggleBtn.textContent = '👁️';
+            }
+        }
+        
+        // Sauvegarder le token directement
+        function saveTokenDirectly() {
+            const tokenInput = document.getElementById('tokenInput');
+            const token = tokenInput.value.trim();
+            
+            if (!token) {
+                showNotification('❌ Veuillez entrer un token', 'error');
+                return;
+            }
+            
+            if (!token.startsWith('ghp_')) {
+                showNotification('❌ Format de token invalide (doit commencer par ghp_)', 'error');
+                return;
+            }
+            
+            // Sauvegarder dans localStorage
+            localStorage.setItem('github_token_imageforko', token);
+            
+            // Mettre à jour le statut
+            updateSetupStatus('✅ Token sauvegardé avec succès !', 'success');
+            
+            // Effacer le champ
+            tokenInput.value = '';
+            
+            // Mettre à jour l'autre section
+            checkGitHubTokenStatus();
+            
+            showNotification('✅ Token sauvegardé avec succès !', 'success');
+        }
+        
+        // Effacer le champ de token
+        function clearTokenInput() {
+            const tokenInput = document.getElementById('tokenInput');
+            tokenInput.value = '';
+            updateSetupStatus('ℹ️ Prêt à configurer votre token', 'info');
+        }
+        
+        // Générer un nouveau token
+        function generateNewToken() {
+            window.open('https://github.com/settings/tokens/new', '_blank');
+            updateSetupStatus('🔗 Ouvrez GitHub pour créer un nouveau token', 'info');
+        }
+        
+        // Mettre à jour le statut de setup
+        function updateSetupStatus(message, type) {
+            const setupStatus = document.getElementById('setupStatus');
+            if (!setupStatus) return;
+            
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            const color = type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8';
+            
+            setupStatus.innerHTML = `
+                <div class="status-message">
+                    <span class="status-icon">${icon}</span>
+                    <span class="status-text">${message}</span>
+                </div>
+            `;
+            
+            setupStatus.style.borderColor = color;
         }
 
         // Initialisation au chargement de la page
