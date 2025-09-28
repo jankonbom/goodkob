@@ -1,5 +1,5 @@
 // GitHub Repository Storage - Upload automatique
-// Configuration GitHub Repository
+// Configuration GitHub Repository - TOKEN FIXE
 const GITHUB_CONFIG = {
     username: 'jankonbom',
     repository: 'imageforko',
@@ -8,6 +8,12 @@ const GITHUB_CONFIG = {
     apiUrl: 'https://api.github.com',
     token: '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'
 };
+
+// Fonction pour forcer l'utilisation du token
+function forceGitHubToken() {
+    console.log('🔐 Token GitHub forcé:', GITHUB_CONFIG.token.substring(0, 8) + '...');
+    return GITHUB_CONFIG.token;
+}
 
 // Fonction pour configurer GitHub
 function setupGitHubStorage(username, repository = 'darklabbb-shop-images') {
@@ -42,7 +48,8 @@ function setupGitHubStorage(username, repository = 'darklabbb-shop-images') {
 // Upload vers GitHub via API
 async function uploadToGitHub(file, fileName, githubToken = null) {
     try {
-        const token = githubToken || GITHUB_CONFIG.token;
+        // Token GitHub fixe - pas de vérification
+        const token = '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';
         
         console.log('📤 Upload vers GitHub:', fileName);
         
@@ -129,7 +136,8 @@ async function migrateFromCloudinaryToGitHub(githubToken = null) {
             throw new Error('Configurez d\'abord votre GitHub avec setupGitHubStorage(username)');
         }
         
-        const token = githubToken || GITHUB_CONFIG.token;
+        // Token GitHub fixe - pas de vérification
+        const token = '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';
         
         // Récupérer les articles avec images Cloudinary
         const { data: articles, error } = await supabaseClient
@@ -257,6 +265,7 @@ function quickGitHubSetup() {
 
 // Export des fonctions
 window.GITHUB_CONFIG = GITHUB_CONFIG;
+window.forceGitHubToken = forceGitHubToken;
 window.setupGitHubStorage = setupGitHubStorage;
 window.uploadToGitHub = uploadToGitHub;
 window.uploadToGitHubManual = uploadToGitHubManual;
@@ -265,6 +274,6 @@ window.getGitHubTokenInstructions = getGitHubTokenInstructions;
 window.quickGitHubSetup = quickGitHubSetup;
 
 console.log('🐙 GitHub Storage configuré !');
-console.log('✅ Token GitHub prêt');
-console.log('📤 Upload: uploadToGitHub(file, fileName)');
-console.log('🔧 Configurer: setupGitHubStorage("username")');
+console.log('✅ Token GitHub fixe et prêt');
+console.log('🔐 Token forcé:', GITHUB_CONFIG.token.substring(0, 8) + '...');
+console.log('📤 Upload automatique: uploadToGitHub(file, fileName)');
