@@ -3658,7 +3658,13 @@
                 console.log('📁 Événement change détecté');
                 if (e.target.files && e.target.files.length > 0) {
                     console.log('📱 Fichier sélectionné:', e.target.files[0].name);
-                    handleMediaFile(e.target.files[0]);
+                    console.log('📱 Type de fichier:', e.target.files[0].type);
+                    console.log('📱 Taille du fichier:', e.target.files[0].size);
+                    
+                    // Traitement immédiat sur mobile
+                    setTimeout(() => {
+                        handleMediaFile(e.target.files[0]);
+                    }, 100);
                 } else {
                     console.log('❌ Aucun fichier sélectionné');
                 }
@@ -3673,6 +3679,9 @@
         }
 
         function handleMediaFile(file) {
+            console.log('📁 Traitement du fichier:', file.name, file.type);
+            console.log('📁 Fichier sélectionné:', selectedMediaFile);
+            
             // Vérification de taille supprimée - aucune limite
 
             // Vérifier le type
@@ -3688,7 +3697,9 @@
             const previewVideo = document.getElementById('previewVideo');
             const uploadZone = document.getElementById('mediaUploadZone');
 
+            console.log('📁 Masquage de la zone d\'upload');
             uploadZone.style.display = 'none';
+            console.log('📁 Affichage de l\'aperçu');
             preview.style.display = 'block';
             
             // Sur mobile, empêcher la fermeture du modal pendant le traitement
@@ -3714,13 +3725,18 @@
                 };
                 reader.readAsDataURL(file);
             } else if (file.type.startsWith('video/')) {
+                console.log('📹 Traitement vidéo');
                 const url = URL.createObjectURL(file);
                 previewVideo.src = url;
                 previewVideo.style.display = 'block';
                 previewImg.style.display = 'none';
                 
+                console.log('📹 URL vidéo créée:', url);
+                console.log('📹 Affichage de la vidéo');
+                
                 // Optimisations spécifiques pour mobile
                 if (isMobile()) {
+                    console.log('📱 Optimisations mobile pour vidéo');
                     previewVideo.setAttribute('playsinline', 'true');
                     previewVideo.setAttribute('webkit-playsinline', 'true');
                     previewVideo.setAttribute('preload', 'metadata');
@@ -3733,6 +3749,7 @@
                 }
             }
             
+            console.log('📁 Fichier traité avec succès');
             showNotification('Fichier sélectionné avec succès !', 'success');
         }
 
