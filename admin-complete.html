@@ -682,7 +682,26 @@
             border-top: 1px solid var(--border-color);
         }
 
-        /* Drag & Drop moderne */
+        /* ===== UPLOAD MOBILE ===== */
+        .mobile-upload {
+            display: block;
+        }
+        
+        .mobile-upload input[type="file"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+        
+        /* ===== UPLOAD PC ===== */
+        .pc-upload {
+            display: block;
+        }
+        
         .media-upload-zone {
             border: 2px dashed var(--border-color);
             border-radius: 16px;
@@ -695,7 +714,40 @@
             overflow: hidden;
         }
         
-        /* Input file invisible mais cliquable sur mobile */
+        .media-upload-zone:hover {
+            border-color: var(--accent-blue);
+            background: rgba(88, 166, 255, 0.05);
+        }
+        
+        .media-upload-zone.dragover {
+            border-color: var(--accent-blue);
+            background: rgba(88, 166, 255, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .upload-content {
+            pointer-events: none;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+        
+        .upload-hint {
+            color: var(--text-secondary);
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        .upload-formats {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        
+        /* Input file invisible mais cliquable */
         .media-upload-zone input[type="file"] {
             position: absolute;
             top: 0;
@@ -705,22 +757,27 @@
             opacity: 0;
             cursor: pointer;
             z-index: 10;
-            font-size: 16px; /* Éviter le zoom sur iOS */
+            font-size: 16px;
         }
         
-        /* Sur mobile, s'assurer que l'input est cliquable */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .media-upload-zone input[type="file"] {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                opacity: 0;
-                cursor: pointer;
-                z-index: 10;
-                font-size: 16px;
-                touch-action: manipulation;
+            .mobile-upload {
+                display: block !important;
+            }
+            
+            .pc-upload {
+                display: none !important;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-upload {
+                display: none !important;
+            }
+            
+            .pc-upload {
+                display: block !important;
             }
         }
 
@@ -2680,13 +2737,23 @@
                 <!-- Zone de Drag & Drop pour l'image/vidéo -->
                 <div class="form-group">
                     <label>Image/Vidéo de l'article *</label>
-                    <div class="media-upload-zone" id="mediaUploadZone" onclick="document.getElementById('mediaInput').click()">
-                        <div class="upload-content">
-                            <span class="upload-icon">📷</span>
-                            <p>Cliquez ici pour choisir une image ou vidéo</p>
-                            <p class="upload-hint">Formats acceptés: JPG, PNG, GIF, MP4, WEBM, MOV, AVI, MKV</p>
+                    
+                    <!-- Version Mobile -->
+                    <div id="mobileUpload" class="mobile-upload" style="display: none;">
+                        <input type="file" id="mobileMediaInput" accept="image/*,video/*" style="width: 100%; padding: 15px; border: 2px solid #007bff; border-radius: 8px; font-size: 16px;">
+                    </div>
+                    
+                    <!-- Version PC -->
+                    <div id="pcUpload" class="pc-upload">
+                        <div class="media-upload-zone" id="mediaUploadZone">
+                            <div class="upload-content">
+                                <span class="upload-icon">📷</span>
+                                <p>Glissez-déposez une image ou vidéo ici</p>
+                                <p class="upload-hint">Ou cliquez pour choisir un fichier</p>
+                                <p class="upload-formats">Formats: JPG, PNG, GIF, MP4, WEBM, MOV, AVI, MKV</p>
+                            </div>
+                            <input type="file" id="mediaInput" accept="image/*,video/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;">
                         </div>
-                        <input type="file" id="mediaInput" accept="image/*,video/*" style="display: none;">
                     </div>
                     <div class="media-preview" id="mediaPreview" style="display: none;">
                         <div class="preview-container">
@@ -3614,68 +3681,92 @@
         // ===== FONCTIONS DRAG & DROP =====
         
         function setupMediaUpload() {
-            const uploadZone = document.getElementById('mediaUploadZone');
-            const mediaInput = document.getElementById('mediaInput');
-            const removeMedia = document.getElementById('removeMedia');
-
-            // Reset des événements
-            uploadZone.replaceWith(uploadZone.cloneNode(true));
-            const newUploadZone = document.getElementById('mediaUploadZone');
-            const newMediaInput = document.getElementById('mediaInput');
-            const newRemoveMedia = document.getElementById('removeMedia');
-
-            // Clic sur la zone - déclencher l'input file
-            newUploadZone.addEventListener('click', (e) => {
-                console.log('🖱️ Clic sur la zone d\'upload');
-                newMediaInput.click();
-            });
-
-            // Drag & Drop
-            newUploadZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                newUploadZone.classList.add('dragover');
-            });
-
-            newUploadZone.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                newUploadZone.classList.remove('dragover');
-            });
-
-            newUploadZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                newUploadZone.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    handleMediaFile(files[0]);
+            // Détection de l'appareil
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            const isTelegram = /Telegram/i.test(navigator.userAgent);
+            
+            console.log('📱 Détection:', { isMobileDevice, isTelegram, userAgent: navigator.userAgent });
+            
+            // Configuration selon l'appareil
+            if (isMobileDevice || isTelegram) {
+                // Version Mobile/Telegram
+                document.getElementById('mobileUpload').style.display = 'block';
+                document.getElementById('pcUpload').style.display = 'none';
+                
+                const mobileInput = document.getElementById('mobileMediaInput');
+                if (mobileInput) {
+                    mobileInput.addEventListener('change', (e) => {
+                        console.log('📱 Fichier sélectionné sur mobile:', e.target.files[0]?.name);
+                        if (e.target.files && e.target.files.length > 0) {
+                            handleMediaFile(e.target.files[0]);
+                        }
+                    });
                 }
-            });
+            } else {
+                // Version PC
+                document.getElementById('mobileUpload').style.display = 'none';
+                document.getElementById('pcUpload').style.display = 'block';
+                
+                const uploadZone = document.getElementById('mediaUploadZone');
+                const mediaInput = document.getElementById('mediaInput');
+                const removeMedia = document.getElementById('removeMedia');
 
-            // Sélection de fichier - traitement immédiat
-            newMediaInput.addEventListener('change', (e) => {
-                console.log('📁 Événement change détecté');
-                if (e.target.files && e.target.files.length > 0) {
-                    console.log('📱 Fichier sélectionné:', e.target.files[0].name);
-                    console.log('📱 Type de fichier:', e.target.files[0].type);
-                    console.log('📱 Taille du fichier:', e.target.files[0].size);
-                    
-                    // Traitement immédiat sur mobile
-                    setTimeout(() => {
+                if (!uploadZone || !mediaInput) return;
+
+                // Reset des événements
+                uploadZone.replaceWith(uploadZone.cloneNode(true));
+                const newUploadZone = document.getElementById('mediaUploadZone');
+                const newMediaInput = document.getElementById('mediaInput');
+                const newRemoveMedia = document.getElementById('removeMedia');
+
+                // Clic sur la zone - déclencher l'input file
+                newUploadZone.addEventListener('click', (e) => {
+                    console.log('🖱️ Clic sur la zone d\'upload PC');
+                    newMediaInput.click();
+                });
+
+                // Drag & Drop pour PC
+                newUploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    newUploadZone.classList.add('dragover');
+                });
+
+                newUploadZone.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    newUploadZone.classList.remove('dragover');
+                });
+
+                newUploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    newUploadZone.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        handleMediaFile(files[0]);
+                    }
+                });
+
+                // Sélection de fichier PC
+                newMediaInput.addEventListener('change', (e) => {
+                    console.log('📁 Événement change détecté PC');
+                    if (e.target.files && e.target.files.length > 0) {
+                        console.log('💻 Fichier sélectionné PC:', e.target.files[0].name);
                         handleMediaFile(e.target.files[0]);
-                    }, 100);
-                } else {
-                    console.log('❌ Aucun fichier sélectionné');
-                }
-            });
+                    }
+                });
+            }
 
-            // Suppression
-            newRemoveMedia.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                resetMediaUpload();
-            });
+            // Suppression (pour les deux versions)
+            const removeMedia = document.getElementById('removeMedia');
+            if (removeMedia) {
+                removeMedia.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    resetMediaUpload();
+                });
+            }
         }
 
         function handleMediaFile(file) {
