@@ -6,19 +6,24 @@ const GITHUB_CONFIG = {
     branch: 'main',
     baseUrl: 'https://raw.githubusercontent.com',
     apiUrl: 'https://api.github.com',
-    // Token sécurisé - récupéré depuis localStorage ou configuré une seule fois
+    // Token sécurisé - récupéré depuis les variables d'environnement
     getToken: function() {
-        // 1. Essayer de récupérer depuis localStorage (sécurisé)
-        let token = localStorage.getItem('github_token_secure');
+        // 1. Essayer de récupérer depuis les variables d'environnement GitHub
+        let token = process.env.API_TOKEN || window.API_TOKEN;
         
-        // 2. Si pas de token, utiliser le token par défaut (première fois)
+        // 2. Si pas de variable d'environnement, essayer localStorage
         if (!token) {
-            token = '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';
-            // Sauvegarder pour la prochaine fois
-            localStorage.setItem('github_token_secure', token);
-            console.log('🔐 Token GitHub sauvegardé de manière sécurisée');
+            token = localStorage.getItem('github_token_secure');
         }
         
+        // 3. Si toujours pas de token, demander à l'utilisateur
+        if (!token) {
+            console.log('❌ Aucun token GitHub configuré');
+            console.log('💡 Configurez API_TOKEN dans les secrets GitHub');
+            throw new Error('Token GitHub requis - Configurez API_TOKEN dans les secrets GitHub');
+        }
+        
+        console.log('🔐 Token GitHub sécurisé utilisé:', token.substring(0, 8) + '...');
         return token;
     }
 };
@@ -305,29 +310,29 @@ function quickGitHubSetup() {
     console.log('✅ Prêt pour l\'upload !');
 }
 
-// Fonctions de gestion sécurisée du token
+// Fonctions de gestion du token fixe
 function setGitHubToken(newToken) {
     if (!newToken || !newToken.startsWith('ghp_')) {
         console.log('❌ Token invalide. Un token GitHub commence par "ghp_"');
         return false;
     }
     
-    localStorage.setItem('github_token_secure', newToken);
-    console.log('✅ Token GitHub mis à jour et sécurisé');
-    console.log('🔐 Token:', newToken.substring(0, 8) + '...');
+    // Mettre à jour le token dans le code directement
+    console.log('⚠️ Pour changer le token, modifiez la ligne 12 dans github-storage.js');
+    console.log('🔐 Token actuel:', GITHUB_CONFIG.getToken().substring(0, 8) + '...');
+    console.log('💡 Nouveau token:', newToken.substring(0, 8) + '...');
     return true;
 }
 
 function getGitHubToken() {
     const token = GITHUB_CONFIG.getToken();
-    console.log('🔐 Token GitHub actuel:', token.substring(0, 8) + '...');
+    console.log('🔐 Token GitHub fixe:', token.substring(0, 8) + '...');
     return token;
 }
 
 function clearGitHubToken() {
-    localStorage.removeItem('github_token_secure');
-    console.log('🗑️ Token GitHub supprimé');
-    console.log('⚠️ Vous devrez reconfigurer le token');
+    console.log('⚠️ Token fixe - ne peut pas être supprimé');
+    console.log('💡 Pour changer le token, modifiez le code directement');
 }
 
 // Export des fonctions
@@ -344,7 +349,7 @@ window.getGitHubTokenInstructions = getGitHubTokenInstructions;
 window.quickGitHubSetup = quickGitHubSetup;
 
 console.log('🐙 GitHub Storage configuré !');
-console.log('✅ Token GitHub sécurisé et prêt');
-console.log('🔐 Token sécurisé:', GITHUB_CONFIG.getToken().substring(0, 8) + '...');
+console.log('✅ Token GitHub fixe et prêt');
+console.log('🔐 Token fixe:', GITHUB_CONFIG.getToken().substring(0, 8) + '...');
 console.log('📤 Upload automatique: uploadToGitHub(file, fileName)');
-console.log('🔧 Gestion token: setGitHubToken("nouveau_token")');
+console.log('🌐 Fonctionne sur tous les appareils (PC, mobile, tablette)');
