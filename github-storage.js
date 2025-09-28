@@ -8,10 +8,21 @@ const GITHUB_CONFIG = {
     apiUrl: 'https://api.github.com',
     // Token sécurisé - récupéré depuis les variables d'environnement
     getToken: function() {
-        // Solution qui marche partout : Token dans le code (masqué)
-        const token = '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';
+        // Solution mobile : Token dans localStorage (une seule fois)
+        let token = localStorage.getItem('github_token_imageforko');
         
-        console.log('🔐 Token imageforko:', token.substring(0, 8) + '...');
+        if (!token) {
+            // Demander le token une seule fois
+            token = prompt('🔑 Entrez votre token GitHub pour imageforko:');
+            if (token) {
+                localStorage.setItem('github_token_imageforko', token);
+                console.log('✅ Token sauvegardé pour les prochaines fois');
+            } else {
+                throw new Error('Token GitHub requis pour l\'upload');
+            }
+        }
+        
+        console.log('🔐 Token utilisé:', token.substring(0, 8) + '...');
         console.log('📁 Upload vers: jankonbom/imageforko');
         return token;
     }
