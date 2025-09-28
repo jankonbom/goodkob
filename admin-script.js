@@ -116,10 +116,16 @@ function loadArticles() {
             <div class="admin-card">
                 <h3>📄 Gestion des Articles</h3>
                 <p>Interface de gestion des articles en cours de développement...</p>
-                <button class="btn btn-primary" onclick="openArticleModal()">
-                    <span class="btn-icon">➕</span>
-                    Ajouter un Article
-                </button>
+                <div class="article-actions">
+                    <button class="btn btn-primary" onclick="openArticleModal()">
+                        <span class="btn-icon">➕</span>
+                        Ajouter un Article
+                    </button>
+                    <button class="btn btn-info" onclick="switchSection('debug')">
+                        <span class="btn-icon">🐛</span>
+                        Debug Console
+                    </button>
+                </div>
             </div>
         `;
     }
@@ -651,6 +657,130 @@ function loadCommandMessages() {
     }
 }
 
+// ===== FONCTIONS DEBUG CONSOLE =====
+function refreshDebugInfo() {
+    // Informations système
+    document.getElementById('debugBrowserInfo').textContent = getBrowserInfo();
+    document.getElementById('debugResolution').textContent = `${window.innerWidth}x${window.innerHeight}`;
+    document.getElementById('debugUserAgentInfo').textContent = navigator.userAgent.substring(0, 80) + '...';
+    document.getElementById('debugTimestamp').textContent = new Date().toLocaleString();
+    
+    // Informations token
+    const token = localStorage.getItem('github_token_imageforko');
+    document.getElementById('debugTokenStatusInfo').textContent = token ? '✅ Présent' : '❌ Manquant';
+    document.getElementById('debugTokenPrefix').textContent = token ? token.substring(0, 8) + '...' : 'Aucun';
+    document.getElementById('debugTokenLength').textContent = token ? `${token.length} caractères` : '0';
+    
+    // Informations fichier
+    if (selectedMediaFile) {
+        document.getElementById('debugFileNameInfo').textContent = selectedMediaFile.name;
+        document.getElementById('debugFileSizeInfo').textContent = formatFileSize(selectedMediaFile.size);
+        document.getElementById('debugFileTypeInfo').textContent = selectedMediaFile.type;
+        document.getElementById('debugFileDateInfo').textContent = new Date(selectedMediaFile.lastModified).toLocaleString();
+    } else {
+        document.getElementById('debugFileNameInfo').textContent = 'Aucun fichier';
+        document.getElementById('debugFileSizeInfo').textContent = '0 Bytes';
+        document.getElementById('debugFileTypeInfo').textContent = 'N/A';
+        document.getElementById('debugFileDateInfo').textContent = 'N/A';
+    }
+    
+    addDebugLog('Informations actualisées', 'info');
+}
+
+function getBrowserInfo() {
+    const ua = navigator.userAgent;
+    if (ua.includes('Safari') && ua.includes('Mobile')) return 'Safari Mobile';
+    if (ua.includes('Safari')) return 'Safari Desktop';
+    if (ua.includes('Chrome')) return 'Chrome';
+    if (ua.includes('Firefox')) return 'Firefox';
+    if (ua.includes('Edge')) return 'Edge';
+    return 'Autre';
+}
+
+function clearDebugConsole() {
+    document.getElementById('debugConsoleLogs').innerHTML = '<p>Console debug effacée...</p>';
+    addDebugLog('Console effacée', 'info');
+}
+
+function exportDebugLogs() {
+    const logs = document.getElementById('debugConsoleLogs').innerText;
+    const blob = new Blob([logs], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `debug-logs-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addDebugLog('Logs exportés', 'success');
+}
+
+function testGitHubConnection() {
+    addDebugLog('Test de connexion GitHub...', 'info');
+    
+    const token = localStorage.getItem('github_token_imageforko');
+    if (!token) {
+        addDebugLog('❌ Token manquant', 'error');
+        return;
+    }
+    
+    addDebugLog('✅ Token trouvé: ' + token.substring(0, 8) + '...', 'success');
+    
+    // Test de l'API GitHub
+    fetch('https://api.github.com/user', {
+        headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            addDebugLog('✅ Connexion GitHub réussie', 'success');
+            return response.json();
+        } else {
+            addDebugLog('❌ Erreur GitHub: ' + response.status, 'error');
+            throw new Error('Erreur API');
+        }
+    })
+    .then(data => {
+        addDebugLog('👤 Utilisateur: ' + data.login, 'success');
+        addDebugLog('📧 Email: ' + (data.email || 'Non public'), 'info');
+    })
+    .catch(error => {
+        addDebugLog('❌ Erreur: ' + error.message, 'error');
+    });
+}
+
+function testFileUpload() {
+    if (!selectedMediaFile) {
+        addDebugLog('❌ Aucun fichier sélectionné', 'error');
+        return;
+    }
+    
+    addDebugLog('🧪 Test d\'upload...', 'info');
+    addDebugLog('📁 Fichier: ' + selectedMediaFile.name, 'info');
+    addDebugLog('📏 Taille: ' + formatFileSize(selectedMediaFile.size), 'info');
+    addDebugLog('🎯 Type: ' + selectedMediaFile.type, 'info');
+    
+    // Simuler l'upload
+    setTimeout(() => {
+        addDebugLog('🔄 Préparation de l\'upload...', 'info');
+    }, 500);
+    
+    setTimeout(() => {
+        addDebugLog('📤 Upload simulé réussi', 'success');
+    }, 1500);
+}
+
+function addDebugLog(message, type = 'info') {
+    const logsDiv = document.getElementById('debugConsoleLogs');
+    const timestamp = new Date().toLocaleTimeString();
+    const color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#28a745' : '#17a2b8';
+    const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+    
+    logsDiv.innerHTML += `<div style="color: ${color}; margin: 2px 0;">[${timestamp}] ${icon} ${message}</div>`;
+    logsDiv.scrollTop = logsDiv.scrollHeight;
+}
+
 // ===== FONCTIONS DEBUG PANEL =====
 function updateDebugPanel(file) {
     // Mettre à jour les informations mobiles
@@ -755,6 +885,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Vérifier le statut du token GitHub
     checkGitHubTokenStatus();
+    
+    // Initialiser la console debug
+    refreshDebugInfo();
     
     // Ajouter les styles d'animation
     const style = document.createElement('style');

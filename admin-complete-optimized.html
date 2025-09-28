@@ -90,6 +90,10 @@
                     <span class="nav-icon">⚙️</span>
                     <span class="nav-text">Config Token</span>
                 </button>
+                <button class="nav-item" onclick="switchSection('debug')">
+                    <span class="nav-icon">🐛</span>
+                    <span class="nav-text">Debug Console</span>
+                </button>
             </div>
         </nav>
 
@@ -104,6 +108,71 @@
                 <div class="section-content">
                     <div id="articlesContainer">
                         <!-- Contenu chargé dynamiquement -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section Debug Console -->
+            <section id="debug-section" class="admin-section">
+                <div class="section-header">
+                    <h2>🐛 Console Debug</h2>
+                    <p>Diagnostiquez les problèmes d'upload et de performance</p>
+                </div>
+                <div class="section-content">
+                    <div class="debug-console-container">
+                        <div class="debug-console">
+                            <div class="debug-header">
+                                <h3>🐛 Debug Console</h3>
+                                <div class="debug-controls">
+                                    <button onclick="clearDebugConsole()" class="debug-btn debug-clear">🗑️ Effacer</button>
+                                    <button onclick="exportDebugLogs()" class="debug-btn debug-export">📤 Exporter</button>
+                                </div>
+                            </div>
+                            
+                            <div class="debug-info-grid">
+                                <div class="debug-info-card">
+                                    <h4>📱 Informations Système</h4>
+                                    <div id="debugSystemInfo">
+                                        <p><strong>Navigateur:</strong> <span id="debugBrowserInfo"></span></p>
+                                        <p><strong>Résolution:</strong> <span id="debugResolution"></span></p>
+                                        <p><strong>User Agent:</strong> <span id="debugUserAgentInfo"></span></p>
+                                        <p><strong>Timestamp:</strong> <span id="debugTimestamp"></span></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="debug-info-card">
+                                    <h4>🔑 Token GitHub</h4>
+                                    <div id="debugTokenInfo">
+                                        <p><strong>Statut:</strong> <span id="debugTokenStatusInfo"></span></p>
+                                        <p><strong>Préfixe:</strong> <span id="debugTokenPrefix"></span></p>
+                                        <p><strong>Longueur:</strong> <span id="debugTokenLength"></span></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="debug-info-card">
+                                    <h4>📁 Fichier Actuel</h4>
+                                    <div id="debugFileInfo">
+                                        <p><strong>Nom:</strong> <span id="debugFileNameInfo"></span></p>
+                                        <p><strong>Taille:</strong> <span id="debugFileSizeInfo"></span></p>
+                                        <p><strong>Type:</strong> <span id="debugFileTypeInfo"></span></p>
+                                        <p><strong>Dernière modif:</strong> <span id="debugFileDateInfo"></span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="debug-logs-container">
+                                <h4>📤 Logs en Temps Réel</h4>
+                                <div id="debugConsoleLogs" class="debug-logs">
+                                    <p>Console debug initialisée...</p>
+                                </div>
+                            </div>
+                            
+                            <div class="debug-actions">
+                                <button onclick="testGitHubConnection()" class="debug-btn debug-test">🧪 Tester GitHub</button>
+                                <button onclick="testFileUpload()" class="debug-btn debug-upload">📤 Tester Upload</button>
+                                <button onclick="refreshDebugInfo()" class="debug-btn debug-refresh">🔄 Actualiser</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

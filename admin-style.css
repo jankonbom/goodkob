@@ -619,6 +619,186 @@ body {
     text-decoration: underline;
 }
 
+/* ===== DEBUG CONSOLE ===== */
+.debug-console-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.debug-console {
+    background: var(--bg-card);
+    border: 2px solid #ff6b6b;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
+}
+
+.debug-header {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.debug-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.debug-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.debug-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.debug-info-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    border-left: 4px solid #ff6b6b;
+}
+
+.debug-info-card h4 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: #ff6b6b;
+    font-weight: 600;
+}
+
+.debug-info-card p {
+    margin: 6px 0;
+    font-size: 14px;
+    color: var(--text-primary);
+    word-break: break-all;
+}
+
+.debug-info-card strong {
+    color: var(--accent-blue);
+}
+
+.debug-logs-container {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.debug-logs-container h4 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: #ff6b6b;
+    font-weight: 600;
+}
+
+.debug-logs {
+    background: #000;
+    color: #00ff00;
+    padding: 16px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border: 1px solid #333;
+}
+
+.debug-actions {
+    display: flex;
+    gap: 12px;
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    flex-wrap: wrap;
+}
+
+.debug-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 120px;
+}
+
+.debug-test {
+    background: #28a745;
+    color: white;
+}
+
+.debug-test:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.debug-upload {
+    background: #17a2b8;
+    color: white;
+}
+
+.debug-upload:hover {
+    background: #138496;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
+
+.debug-refresh {
+    background: #ffc107;
+    color: #000;
+}
+
+.debug-refresh:hover {
+    background: #e0a800;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.debug-clear {
+    background: #dc3545;
+    color: white;
+}
+
+.debug-clear:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.debug-export {
+    background: #6f42c1;
+    color: white;
+}
+
+.debug-export:hover {
+    background: #5a32a3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+}
+
+.article-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.article-actions .btn {
+    flex: 1;
+    min-width: 150px;
+}
+
 /* ===== PANEL DEBUG MOBILE SAFARI ===== */
 .debug-panel {
     background: var(--bg-card);
