@@ -2680,13 +2680,13 @@
                 <!-- Zone de Drag & Drop pour l'image/vidéo -->
                 <div class="form-group">
                     <label>Image/Vidéo de l'article *</label>
-                    <div class="media-upload-zone" id="mediaUploadZone">
+                    <input type="file" id="mediaInput" accept="image/*,video/*" style="display: block; width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #007bff; border-radius: 8px; background: #f8f9fa; font-size: 16px;">
+                    <div class="media-upload-zone" id="mediaUploadZone" style="display: none;">
                         <div class="upload-content">
                             <span class="upload-icon">📷</span>
-                            <p>Cliquez ici pour choisir une image ou vidéo</p>
+                            <p>Glissez-déposez une image ou vidéo ici</p>
                             <p class="upload-hint">Formats acceptés: JPG, PNG, GIF, MP4, WEBM, MOV, AVI, MKV</p>
                         </div>
-                        <input type="file" id="mediaInput" accept="image/*,video/*" style="display: block; width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 8px;">
                     </div>
                     <div class="media-preview" id="mediaPreview" style="display: none;">
                         <div class="preview-container">
@@ -3624,13 +3624,15 @@
             const newMediaInput = document.getElementById('mediaInput');
             const newRemoveMedia = document.getElementById('removeMedia');
 
-            // Clic sur la zone - déclencher l'input file
-            newUploadZone.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('🖱️ Clic sur la zone d\'upload');
-                newMediaInput.click();
-            });
+            // Clic sur la zone - déclencher l'input file (si visible)
+            if (newUploadZone.style.display !== 'none') {
+                newUploadZone.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🖱️ Clic sur la zone d\'upload');
+                    newMediaInput.click();
+                });
+            }
 
             // Drag & Drop
             newUploadZone.addEventListener('dragover', (e) => {
@@ -5356,18 +5358,18 @@ Ce service n'est pas disponible pour le moment ⛔`,
                     mediaInput.setAttribute('capture', 'environment');
                     mediaInput.setAttribute('accept', 'image/*,video/*');
                     
-                    // Configuration forcée pour mobile
+                    // Configuration simple et directe pour mobile
                     mediaInput.style.display = 'block';
                     mediaInput.style.width = '100%';
-                    mediaInput.style.padding = '10px';
-                    mediaInput.style.marginTop = '10px';
-                    mediaInput.style.border = '1px solid #ccc';
+                    mediaInput.style.padding = '15px';
+                    mediaInput.style.margin = '10px 0';
+                    mediaInput.style.border = '2px solid #007bff';
                     mediaInput.style.borderRadius = '8px';
+                    mediaInput.style.background = '#f8f9fa';
                     mediaInput.style.fontSize = '16px';
-                    mediaInput.style.pointerEvents = 'auto';
+                    mediaInput.style.cursor = 'pointer';
                     
-                    console.log('📱 Input file configuré:', mediaInput);
-                    console.log('📱 Style appliqué:', mediaInput.style.cssText);
+                    console.log('📱 Input file configuré pour mobile - SIMPLE ET DIRECT');
                 }
             }
         }
