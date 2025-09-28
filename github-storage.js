@@ -8,19 +8,22 @@ const GITHUB_CONFIG = {
     apiUrl: 'https://api.github.com',
     // Token sécurisé - récupéré depuis les variables d'environnement
     getToken: function() {
-        // 1. Essayer de récupérer depuis les variables d'environnement GitHub
-        let token = process.env.API_TOKEN || window.API_TOKEN;
+        // 1. Essayer de récupérer depuis localStorage
+        let token = localStorage.getItem('github_token_secure');
         
-        // 2. Si pas de variable d'environnement, essayer localStorage
-        if (!token) {
-            token = localStorage.getItem('github_token_secure');
-        }
-        
-        // 3. Si toujours pas de token, demander à l'utilisateur
+        // 2. Si pas de token, demander à l'utilisateur
         if (!token) {
             console.log('❌ Aucun token GitHub configuré');
-            console.log('💡 Configurez API_TOKEN dans les secrets GitHub');
-            throw new Error('Token GitHub requis - Configurez API_TOKEN dans les secrets GitHub');
+            console.log('💡 Entrez votre token GitHub :');
+            token = prompt('🔐 Entrez votre token GitHub (Personal Access Token):');
+            
+            if (!token) {
+                throw new Error('Token GitHub requis pour l\'upload');
+            }
+            
+            // Sauvegarder le token
+            localStorage.setItem('github_token_secure', token);
+            console.log('✅ Token GitHub sauvegardé');
         }
         
         console.log('🔐 Token GitHub sécurisé utilisé:', token.substring(0, 8) + '...');
