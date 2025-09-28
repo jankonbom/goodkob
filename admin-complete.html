@@ -5351,14 +5351,14 @@ Ce service n'est pas disponible pour le moment ⛔`,
                 // Optimiser l'input file pour mobile
                 const mediaInput = document.getElementById('mediaInput');
                 if (mediaInput) {
-                    mediaInput.setAttribute('capture', 'environment');
+                    // SUPPRIMÉ capture="environment" pour ouvrir la galerie au lieu de l'appareil photo
                     mediaInput.setAttribute('accept', 'image/*,video/*');
                     
                     // Configuration simple pour mobile
                     mediaInput.style.display = 'none';
                     mediaInput.style.fontSize = '16px';
                     
-                    console.log('📱 Input file configuré pour mobile - SIMPLE ET DIRECT');
+                    console.log('📱 Input file configuré pour mobile - OUVRE LA GALERIE');
                 }
             }
         }
