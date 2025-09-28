@@ -3404,6 +3404,11 @@
         async function saveArticle(event) {
             event.preventDefault();
             
+            // Empêcher la fermeture du modal sur mobile
+            if (isMobile()) {
+                event.stopPropagation();
+            }
+            
             const formData = new FormData(event.target);
             const stockStatus = formData.get('stock_status');
             
@@ -3454,13 +3459,19 @@
                         // Option 2: GitHub Storage pour les vidéos (NOUVELLE - illimité)
                         try {
                             showNotification('🎥 Upload de la vidéo vers GitHub...', 'info');
+                            
+                            // Sur mobile, ajouter un délai pour éviter les conflits
+                            if (isMobile()) {
+                                await new Promise(resolve => setTimeout(resolve, 500));
+                            }
+                            
                             const videoUrl = await uploadToGitHub(selectedMediaFile, fileName);
                             articleData.image_url = videoUrl;
                             
                             console.log('🎥 Vidéo uploadée vers GitHub:', fileName, 'URL:', videoUrl);
                             
                             // Sauvegarder l'article avec l'URL de la vidéo
-                                await saveArticleToDatabase(articleData);
+                            await saveArticleToDatabase(articleData);
                         } catch (error) {
                             console.error('Erreur lors de l\'upload de la vidéo vers GitHub:', error);
                             showNotification('Erreur lors de l\'upload de la vidéo: ' + error.message, 'error');
@@ -3575,21 +3586,37 @@
             const newMediaInput = document.getElementById('mediaInput');
             const newRemoveMedia = document.getElementById('removeMedia');
 
-            // Clic sur la zone
-            newUploadZone.addEventListener('click', () => newMediaInput.click());
+            // Clic sur la zone - avec gestion mobile améliorée
+            newUploadZone.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Sur mobile, éviter les conflits avec le clavier
+                if (isMobile()) {
+                    setTimeout(() => {
+                        newMediaInput.click();
+                    }, 100);
+                } else {
+                    newMediaInput.click();
+                }
+            });
 
             // Drag & Drop
             newUploadZone.addEventListener('dragover', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 newUploadZone.classList.add('dragover');
             });
 
-            newUploadZone.addEventListener('dragleave', () => {
+            newUploadZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 newUploadZone.classList.remove('dragover');
             });
 
             newUploadZone.addEventListener('drop', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 newUploadZone.classList.remove('dragover');
                 const files = e.dataTransfer.files;
                 if (files.length > 0) {
@@ -3597,15 +3624,27 @@
                 }
             });
 
-            // Sélection de fichier
+            // Sélection de fichier - avec gestion mobile améliorée
             newMediaInput.addEventListener('change', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
                 if (e.target.files.length > 0) {
-                    handleMediaFile(e.target.files[0]);
+                    // Délai pour éviter les conflits sur mobile
+                    if (isMobile()) {
+                        setTimeout(() => {
+                            handleMediaFile(e.target.files[0]);
+                        }, 150);
+                    } else {
+                        handleMediaFile(e.target.files[0]);
+                    }
                 }
             });
 
             // Suppression
-            newRemoveMedia.addEventListener('click', () => {
+            newRemoveMedia.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 resetMediaUpload();
             });
         }
@@ -3642,6 +3681,19 @@
                 previewVideo.src = url;
                 previewVideo.style.display = 'block';
                 previewImg.style.display = 'none';
+                
+                // Optimisations spécifiques pour mobile
+                if (isMobile()) {
+                    previewVideo.setAttribute('playsinline', 'true');
+                    previewVideo.setAttribute('webkit-playsinline', 'true');
+                    previewVideo.setAttribute('preload', 'metadata');
+                    previewVideo.setAttribute('controls', 'true');
+                    
+                    // Forcer le chargement sur mobile
+                    setTimeout(() => {
+                        previewVideo.load();
+                    }, 100);
+                }
             }
             
             showNotification('Fichier sélectionné avec succès !', 'success');
@@ -5227,6 +5279,25 @@ Ce service n'est pas disponible pour le moment ⛔`,
                     video.setAttribute('preload', 'metadata');
                     video.load();
                 });
+                
+                // Empêcher la fermeture accidentelle du modal sur mobile
+                const modal = document.getElementById('articleModal');
+                if (modal) {
+                    modal.addEventListener('touchstart', function(e) {
+                        e.stopPropagation();
+                    });
+                    
+                    modal.addEventListener('touchend', function(e) {
+                        e.stopPropagation();
+                    });
+                }
+                
+                // Optimiser l'input file pour mobile
+                const mediaInput = document.getElementById('mediaInput');
+                if (mediaInput) {
+                    mediaInput.setAttribute('capture', 'environment');
+                    mediaInput.setAttribute('accept', 'image/*,video/*');
+                }
             }
         }
 
