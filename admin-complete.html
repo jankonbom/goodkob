@@ -3922,7 +3922,6 @@
                 const mobileInput = document.getElementById('mobileMediaInput');
                 if (mobileInput) {
                     mobileInput.addEventListener('change', (e) => {
-                        console.log('📱 Fichier sélectionné sur mobile:', e.target.files[0]?.name);
                         if (e.target.files && e.target.files.length > 0) {
                             handleMediaFile(e.target.files[0]);
                         }
@@ -3947,7 +3946,6 @@
 
                 // Clic sur la zone - déclencher l'input file
                 newUploadZone.addEventListener('click', (e) => {
-                    console.log('🖱️ Clic sur la zone d\'upload PC');
                     newMediaInput.click();
                 });
 
@@ -3976,9 +3974,7 @@
 
                 // Sélection de fichier PC
                 newMediaInput.addEventListener('change', (e) => {
-                    console.log('📁 Événement change détecté PC');
                     if (e.target.files && e.target.files.length > 0) {
-                        console.log('💻 Fichier sélectionné PC:', e.target.files[0].name);
                         handleMediaFile(e.target.files[0]);
                     }
                 });
@@ -3997,10 +3993,7 @@
 
         function handleMediaFile(file) {
             console.log('📁 Traitement du fichier:', file.name, file.type);
-            console.log('📁 Fichier sélectionné:', selectedMediaFile);
             
-            // Vérification de taille supprimée - aucune limite
-
             // Vérifier le type
             const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
             if (!validTypes.includes(file.type)) {
@@ -4014,24 +4007,9 @@
             const previewVideo = document.getElementById('previewVideo');
             const uploadZone = document.getElementById('mediaUploadZone');
 
-            console.log('📁 Masquage de la zone d\'upload');
+            // Masquer la zone d'upload et afficher l'aperçu
             uploadZone.style.display = 'none';
-            console.log('📁 Affichage de l\'aperçu');
             preview.style.display = 'block';
-            
-            // Sur mobile, empêcher la fermeture du modal pendant le traitement
-            if (isMobile()) {
-                const modal = document.getElementById('articleModal');
-                if (modal) {
-                    // Délai réduit pour ne pas bloquer l'interface
-                    setTimeout(() => {
-                        modal.style.pointerEvents = 'none';
-                        setTimeout(() => {
-                            modal.style.pointerEvents = 'auto';
-                        }, 500);
-                    }, 200);
-                }
-            }
 
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
@@ -4042,31 +4020,20 @@
                 };
                 reader.readAsDataURL(file);
             } else if (file.type.startsWith('video/')) {
-                console.log('📹 Traitement vidéo');
                 const url = URL.createObjectURL(file);
                 previewVideo.src = url;
                 previewVideo.style.display = 'block';
                 previewImg.style.display = 'none';
                 
-                console.log('📹 URL vidéo créée:', url);
-                console.log('📹 Affichage de la vidéo');
-                
-                // Optimisations spécifiques pour mobile
+                // Optimisations pour mobile
                 if (isMobile()) {
-                    console.log('📱 Optimisations mobile pour vidéo');
                     previewVideo.setAttribute('playsinline', 'true');
                     previewVideo.setAttribute('webkit-playsinline', 'true');
                     previewVideo.setAttribute('preload', 'metadata');
                     previewVideo.setAttribute('controls', 'true');
-                    
-                    // Forcer le chargement sur mobile
-                    setTimeout(() => {
-                        previewVideo.load();
-                    }, 100);
                 }
             }
             
-            console.log('📁 Fichier traité avec succès');
             showNotification('Fichier sélectionné avec succès !', 'success');
         }
 
@@ -5651,29 +5618,10 @@ Ce service n'est pas disponible pour le moment ⛔`,
                     video.load();
                 });
                 
-                // Empêcher la fermeture accidentelle du modal sur mobile
+                // Protection basique du modal sur mobile
                 const modal = document.getElementById('articleModal');
                 if (modal) {
-                    // Bloquer tous les événements de fermeture sur mobile
-                    modal.addEventListener('touchstart', function(e) {
-                        e.stopPropagation();
-                    });
-                    
-                    modal.addEventListener('touchend', function(e) {
-                        e.stopPropagation();
-                    });
-                    
-                    // Empêcher la fermeture par clic en dehors
                     modal.addEventListener('click', function(e) {
-                        if (e.target === modal) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            return false;
-                        }
-                    });
-                    
-                    // Empêcher la fermeture par touche en dehors
-                    modal.addEventListener('touchstart', function(e) {
                         if (e.target === modal) {
                             e.preventDefault();
                             e.stopPropagation();
@@ -5685,14 +5633,8 @@ Ce service n'est pas disponible pour le moment ⛔`,
                 // Optimiser l'input file pour mobile
                 const mediaInput = document.getElementById('mediaInput');
                 if (mediaInput) {
-                    // SUPPRIMÉ capture="environment" pour ouvrir la galerie au lieu de l'appareil photo
                     mediaInput.setAttribute('accept', 'image/*,video/*');
-                    
-                    // Configuration simple pour mobile
-                    mediaInput.style.display = 'none';
                     mediaInput.style.fontSize = '16px';
-                    
-                    console.log('📱 Input file configuré pour mobile - OUVRE LA GALERIE');
                 }
             }
         }
