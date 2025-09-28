@@ -2588,15 +2588,15 @@
 
     </main>
 
-    <!-- Modal Ajout/Modification d'Article -->
-    <div id="articleModal" class="modal" style="display: none;">
-        <div class="modal-content">
+        <!-- Modal Ajout/Modification d'Article -->
+    <div id="articleModal" class="modal" style="display: none;" oncontextmenu="return false;">
+        <div class="modal-content" oncontextmenu="return false;">
             <div class="modal-header">
                 <h3 id="modalTitle">Ajouter un Article</h3>
-                <button class="modal-close" onclick="closeModal()">✕</button>
+                <button class="modal-close" onclick="closeModal()" oncontextmenu="return false;">✕</button>
             </div>
             
-            <form id="articleForm" onsubmit="saveArticle(event)">
+            <form id="articleForm" onsubmit="saveArticle(event)" oncontextmenu="return false;">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="articleName">Nom de l'article *</label>
@@ -3403,10 +3403,12 @@
         // Fonction pour sauvegarder un article
         async function saveArticle(event) {
             event.preventDefault();
+            event.stopPropagation();
             
             // Empêcher la fermeture du modal sur mobile
             if (isMobile()) {
-                event.stopPropagation();
+                // Bloquer complètement la propagation sur mobile
+                event.stopImmediatePropagation();
             }
             
             const formData = new FormData(event.target);
@@ -3551,6 +3553,12 @@
 
         // Fonction pour fermer le modal
         function closeModal() {
+            // Sur mobile, ajouter une confirmation pour éviter la fermeture accidentelle
+            if (isMobile() && selectedMediaFile) {
+                if (!confirm('Êtes-vous sûr de vouloir fermer ? Votre fichier sera perdu.')) {
+                    return;
+                }
+            }
             document.getElementById('articleModal').style.display = 'none';
         }
 
@@ -3628,13 +3636,14 @@
             newMediaInput.addEventListener('change', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                e.stopImmediatePropagation();
                 
                 if (e.target.files.length > 0) {
                     // Délai pour éviter les conflits sur mobile
                     if (isMobile()) {
                         setTimeout(() => {
                             handleMediaFile(e.target.files[0]);
-                        }, 150);
+                        }, 200);
                     } else {
                         handleMediaFile(e.target.files[0]);
                     }
@@ -3667,6 +3676,17 @@
 
             uploadZone.style.display = 'none';
             preview.style.display = 'block';
+            
+            // Sur mobile, empêcher la fermeture du modal pendant le traitement
+            if (isMobile()) {
+                const modal = document.getElementById('articleModal');
+                if (modal) {
+                    modal.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        modal.style.pointerEvents = 'auto';
+                    }, 1000);
+                }
+            }
 
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
@@ -5283,12 +5303,31 @@ Ce service n'est pas disponible pour le moment ⛔`,
                 // Empêcher la fermeture accidentelle du modal sur mobile
                 const modal = document.getElementById('articleModal');
                 if (modal) {
+                    // Bloquer tous les événements de fermeture sur mobile
                     modal.addEventListener('touchstart', function(e) {
                         e.stopPropagation();
                     });
                     
                     modal.addEventListener('touchend', function(e) {
                         e.stopPropagation();
+                    });
+                    
+                    // Empêcher la fermeture par clic en dehors
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                        }
+                    });
+                    
+                    // Empêcher la fermeture par touche en dehors
+                    modal.addEventListener('touchstart', function(e) {
+                        if (e.target === modal) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                        }
                     });
                 }
                 
