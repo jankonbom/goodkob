@@ -26,7 +26,7 @@ jobs:
       
     - name: Inject Secret
       run: |
-        # Créer le fichier d'injection du secret
+        # Créer le fichier d'injection du secret (pour développement)
         echo "window.API_TOKEN = '${{ secrets.API_TOKEN }}';" > inject-secret.js
         
     - name: Setup Pages
