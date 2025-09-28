@@ -1,29 +1,12 @@
-// GitHub Repository Storage - 100% Gratuit et Illimité
-// Upload automatique vers GitHub pour stockage d'images
-
-// Configuration GitHub Repository - CONFIGURÉE
+// GitHub Repository Storage - Upload automatique
+// Configuration GitHub Repository
 const GITHUB_CONFIG = {
-    username: 'jankonbom', // Votre nom d'utilisateur GitHub
-    repository: 'imageforko', // Votre repository existant
+    username: 'jankonbom',
+    repository: 'imageforko',
     branch: 'main',
     baseUrl: 'https://raw.githubusercontent.com',
     apiUrl: 'https://api.github.com',
-    // Token GitHub configuré directement
-    token: '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',
-    
-    // Fonction pour récupérer le token
-    getToken: function() {
-        // Utiliser le token configuré directement
-        localStorage.setItem('github_token', this.token);
-        console.log('✅ Token GitHub configuré et prêt');
-        return this.token;
-    },
-    
-    // Fonction pour effacer le token
-    clearToken: function() {
-        localStorage.setItem('github_token', this.token);
-        console.log('🔄 Token GitHub réinitialisé');
-    }
+    token: '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'
 };
 
 // Fonction pour configurer GitHub
@@ -56,13 +39,10 @@ function setupGitHubStorage(username, repository = 'darklabbb-shop-images') {
     };
 }
 
-// Upload vers GitHub via API (token configuré)
+// Upload vers GitHub via API
 async function uploadToGitHub(file, fileName, githubToken = null) {
     try {
-        // Utiliser le token configuré directement
         const token = githubToken || GITHUB_CONFIG.token;
-        
-        console.log('🔐 Token GitHub utilisé:', token.substring(0, 8) + '...');
         
         console.log('📤 Upload vers GitHub:', fileName);
         
@@ -149,7 +129,6 @@ async function migrateFromCloudinaryToGitHub(githubToken = null) {
             throw new Error('Configurez d\'abord votre GitHub avec setupGitHubStorage(username)');
         }
         
-        // Utiliser le token configuré directement
         const token = githubToken || GITHUB_CONFIG.token;
         
         // Récupérer les articles avec images Cloudinary
@@ -257,47 +236,23 @@ function fileToBase64(file) {
 
 // Instructions pour obtenir un token GitHub
 function getGitHubTokenInstructions() {
-    console.log('🔑 === OBTENIR UN TOKEN GITHUB ===');
-    console.log('');
+    console.log('🔑 === TOKEN GITHUB ===');
     console.log('1️⃣ Allez sur: https://github.com/settings/tokens');
-    console.log('');
     console.log('2️⃣ Cliquez "Generate new token" → "Generate new token (classic)"');
-    console.log('');
     console.log('3️⃣ Nom: "DarkLabbb Shop Upload"');
-    console.log('');
-    console.log('4️⃣ Sélectionnez ces permissions:');
-    console.log('   ✅ repo (Full control of private repositories)');
-    console.log('   ✅ public_repo (Access public repositories)');
-    console.log('');
+    console.log('4️⃣ Permissions: repo, public_repo');
     console.log('5️⃣ Cliquez "Generate token"');
-    console.log('');
-    console.log('6️⃣ COPIEZ le token (il ne s\'affichera qu\'une fois !)');
-    console.log('');
-    console.log('7️⃣ Utilisez: migrateFromCloudinaryToGitHub("votre_token_ici")');
-    console.log('');
-    console.log('⚠️ GARDEZ VOTRE TOKEN SECRET !');
+    console.log('6️⃣ COPIEZ le token');
 }
 
 // Configuration rapide GitHub
 function quickGitHubSetup() {
-    console.log('🚀 === SETUP RAPIDE GITHUB ===');
-    console.log('');
-    console.log('📋 ÉTAPES RAPIDES :');
-    console.log('');
+    console.log('🚀 === SETUP GITHUB ===');
     console.log('1️⃣ Créer repository: https://github.com/new');
-    console.log('   Nom: darklabbb-shop-images');
-    console.log('   Public: ✅ (obligatoire)');
-    console.log('');
-    console.log('2️⃣ Configurer dans votre app:');
-    console.log('   setupGitHubStorage("VOTRE_USERNAME_GITHUB");');
-    console.log('');
-    console.log('3️⃣ Pour upload automatique (optionnel):');
-    console.log('   getGitHubTokenInstructions();');
-    console.log('');
-    console.log('4️⃣ Pour upload manuel (recommandé):');
-    console.log('   uploadToGitHubManual(file, fileName);');
-    console.log('');
-    console.log('✅ C\'est tout ! GitHub = 100% gratuit et illimité !');
+    console.log('2️⃣ Nom: darklabbb-shop-images');
+    console.log('3️⃣ Public: ✅');
+    console.log('4️⃣ Configurer: setupGitHubStorage("VOTRE_USERNAME")');
+    console.log('✅ Prêt pour l\'upload !');
 }
 
 // Export des fonctions
@@ -310,9 +265,6 @@ window.getGitHubTokenInstructions = getGitHubTokenInstructions;
 window.quickGitHubSetup = quickGitHubSetup;
 
 console.log('🐙 GitHub Storage configuré !');
-console.log('✅ Token GitHub configuré et prêt');
-console.log('🎥 Prêt pour l\'upload de vidéos et images');
-console.log('🚀 Commencer: quickGitHubSetup()');
-console.log('🔧 Configurer: setupGitHubStorage("votre_username")');
-console.log('📤 Upload automatique: uploadToGitHub(file, fileName)');
-console.log('🔄 Migration: migrateFromCloudinaryToGitHub()');
+console.log('✅ Token GitHub prêt');
+console.log('📤 Upload: uploadToGitHub(file, fileName)');
+console.log('🔧 Configurer: setupGitHubStorage("username")');
