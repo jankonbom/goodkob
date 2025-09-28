@@ -71,6 +71,7 @@ async function uploadToGitHub(file, fileName, githubToken = null) {
             console.log('🔐 Test du token GitHub...');
             
             // Test du token d'abord
+            console.log('🔐 Token utilisé:', token.substring(0, 8) + '...');
             const testResponse = await fetch('https://api.github.com/user', {
                 headers: {
                     'Authorization': `token ${token}`,
@@ -78,8 +79,12 @@ async function uploadToGitHub(file, fileName, githubToken = null) {
                 }
             });
             
+            console.log('📊 Status de la réponse:', testResponse.status);
+            
             if (!testResponse.ok) {
-                throw new Error('Token GitHub invalide ou expiré');
+                const errorData = await testResponse.json();
+                console.log('❌ Erreur détaillée:', errorData);
+                throw new Error(`Token GitHub invalide ou expiré (Status: ${testResponse.status})`);
             }
             
             console.log('✅ Token GitHub valide, upload en cours...');
