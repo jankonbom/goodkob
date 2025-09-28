@@ -1,35 +1,28 @@
 // GitHub Repository Storage - 100% Gratuit et Illimité
 // Upload automatique vers GitHub pour stockage d'images
 
-// Configuration GitHub Repository - SÉCURISÉE
+// Configuration GitHub Repository - CONFIGURÉE
 const GITHUB_CONFIG = {
     username: 'jankonbom', // Votre nom d'utilisateur GitHub
     repository: 'imageforko', // Votre repository existant
     branch: 'main',
     baseUrl: 'https://raw.githubusercontent.com',
     apiUrl: 'https://api.github.com',
-    // Token récupéré depuis localStorage ou prompt utilisateur
+    // Token GitHub configuré directement
+    token: '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',
+    
+    // Fonction pour récupérer le token
     getToken: function() {
-        // 1. Essayer de récupérer depuis localStorage
-        let token = localStorage.getItem('github_token');
-        
-        // 2. Si pas de token, demander à l'utilisateur
-        if (!token) {
-            token = prompt('🔐 Entrez votre token GitHub (Personal Access Token):');
-            if (token) {
-                // Sauvegarder pour la prochaine fois
-                localStorage.setItem('github_token', token);
-                console.log('✅ Token sauvegardé localement');
-            }
-        }
-        
-        return token;
+        // Utiliser le token configuré directement
+        localStorage.setItem('github_token', this.token);
+        console.log('✅ Token GitHub configuré et prêt');
+        return this.token;
     },
     
-    // Fonction pour effacer le token (sécurité)
+    // Fonction pour effacer le token
     clearToken: function() {
-        localStorage.removeItem('github_token');
-        console.log('🗑️ Token supprimé de la mémoire locale');
+        localStorage.setItem('github_token', this.token);
+        console.log('🔄 Token GitHub réinitialisé');
     }
 };
 
@@ -63,15 +56,13 @@ function setupGitHubStorage(username, repository = 'darklabbb-shop-images') {
     };
 }
 
-// Upload vers GitHub via API (nécessite token)
+// Upload vers GitHub via API (token configuré)
 async function uploadToGitHub(file, fileName, githubToken = null) {
     try {
-        // Récupérer le token de manière sécurisée
-        const token = githubToken || GITHUB_CONFIG.getToken();
+        // Utiliser le token configuré directement
+        const token = githubToken || GITHUB_CONFIG.token;
         
-        if (!token) {
-            throw new Error('Token GitHub requis pour l\'upload automatique');
-        }
+        console.log('🔐 Token GitHub utilisé:', token.substring(0, 8) + '...');
         
         console.log('📤 Upload vers GitHub:', fileName);
         
@@ -158,8 +149,8 @@ async function migrateFromCloudinaryToGitHub(githubToken = null) {
             throw new Error('Configurez d\'abord votre GitHub avec setupGitHubStorage(username)');
         }
         
-        // Récupérer le token de manière sécurisée
-        const token = githubToken || GITHUB_CONFIG.getToken();
+        // Utiliser le token configuré directement
+        const token = githubToken || GITHUB_CONFIG.token;
         
         // Récupérer les articles avec images Cloudinary
         const { data: articles, error } = await supabaseClient
@@ -319,7 +310,9 @@ window.getGitHubTokenInstructions = getGitHubTokenInstructions;
 window.quickGitHubSetup = quickGitHubSetup;
 
 console.log('🐙 GitHub Storage configuré !');
+console.log('✅ Token GitHub configuré et prêt');
+console.log('🎥 Prêt pour l\'upload de vidéos et images');
 console.log('🚀 Commencer: quickGitHubSetup()');
 console.log('🔧 Configurer: setupGitHubStorage("votre_username")');
-console.log('📤 Upload manuel: uploadToGitHubManual(file, fileName)');
+console.log('📤 Upload automatique: uploadToGitHub(file, fileName)');
 console.log('🔄 Migration: migrateFromCloudinaryToGitHub()');

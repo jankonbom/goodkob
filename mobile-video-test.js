@@ -139,3 +139,5 @@ window.simulateArticleClick = simulateArticleClick;
 console.log('📱 Fonctions de test mobile chargées');
 console.log('💡 Utilisez: testMobileVideos() pour tester les vidéos sur mobile');
 console.log('💡 Utilisez: simulateArticleClick("Nom de l\'article") pour simuler un clic');
+
+

@@ -1,85 +1,54 @@
-// 🔐 GITHUB SECURITY CONFIGURATION
-// Configuration sécurisée pour les tokens GitHub
+// 🚀 GITHUB UPLOAD CONFIGURATION
+// Configuration pour l'upload de vidéos et images
 
-console.log('🔐 === CONFIGURATION SÉCURITÉ GITHUB ===');
+console.log('🚀 === CONFIGURATION UPLOAD GITHUB ===');
 
-// Fonction pour configurer le token GitHub de manière sécurisée
+// Token GitHub configuré directement
+const GITHUB_TOKEN = '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';
+
+// Fonction pour configurer le token GitHub
 function setupGitHubToken() {
-    console.log('🔐 Configuration du token GitHub...');
+    console.log('🚀 Configuration du token GitHub...');
     
-    // Vérifier si un token existe déjà
-    const existingToken = localStorage.getItem('github_token');
+    // Sauvegarder le token directement
+    localStorage.setItem('github_token', GITHUB_TOKEN);
+    console.log('✅ Token GitHub configuré et prêt pour l\'upload');
+    console.log('🎥 Prêt pour l\'upload de vidéos et images');
     
-    if (existingToken) {
-        console.log('✅ Token GitHub déjà configuré');
-        console.log('💡 Pour changer le token, utilisez: changeGitHubToken()');
-        return existingToken;
-    }
-    
-    // Demander le token à l'utilisateur
-    const token = prompt('🔐 Entrez votre Personal Access Token GitHub:');
-    
-    if (!token) {
-        console.log('❌ Aucun token fourni');
-        return null;
-    }
-    
-    // Valider le format du token (commence par ghp_)
-    if (!token.startsWith('ghp_')) {
-        console.log('⚠️ Format de token invalide. Un token GitHub commence par "ghp_"');
-        return null;
-    }
-    
-    // Sauvegarder le token
-    localStorage.setItem('github_token', token);
-    console.log('✅ Token GitHub sauvegardé de manière sécurisée');
-    
-    return token;
+    return GITHUB_TOKEN;
 }
 
 // Fonction pour changer le token
 function changeGitHubToken() {
     console.log('🔄 Changement du token GitHub...');
     
-    // Supprimer l'ancien token
-    localStorage.removeItem('github_token');
-    console.log('🗑️ Ancien token supprimé');
+    // Mettre à jour avec le nouveau token
+    localStorage.setItem('github_token', GITHUB_TOKEN);
+    console.log('✅ Token GitHub mis à jour');
     
-    // Configurer le nouveau token
-    return setupGitHubToken();
+    return GITHUB_TOKEN;
 }
 
-// Fonction pour supprimer le token (sécurité)
+// Fonction pour réinitialiser le token
 function clearGitHubToken() {
-    console.log('🗑️ Suppression du token GitHub...');
-    localStorage.removeItem('github_token');
-    console.log('✅ Token supprimé de la mémoire locale');
-    console.log('⚠️ Vous devrez reconfigurer le token pour les prochains uploads');
+    console.log('🔄 Réinitialisation du token GitHub...');
+    localStorage.setItem('github_token', GITHUB_TOKEN);
+    console.log('✅ Token GitHub réinitialisé et prêt');
 }
 
 // Fonction pour vérifier le statut du token
 function checkGitHubTokenStatus() {
-    const token = localStorage.getItem('github_token');
+    const token = localStorage.getItem('github_token') || GITHUB_TOKEN;
     
-    if (!token) {
-        console.log('❌ Aucun token GitHub configuré');
-        console.log('💡 Utilisez: setupGitHubToken() pour configurer');
-        return false;
-    }
-    
-    console.log('✅ Token GitHub configuré');
-    console.log(`🔐 Token: ${token.substring(0, 8)}...${token.substring(token.length - 4)}`);
+    console.log('✅ Token GitHub configuré et prêt');
+    console.log(`🚀 Token: ${token.substring(0, 8)}...${token.substring(token.length - 4)}`);
+    console.log('🎥 Prêt pour l\'upload de vidéos et images');
     return true;
 }
 
 // Fonction pour tester la connexion GitHub
 async function testGitHubConnection() {
-    const token = localStorage.getItem('github_token');
-    
-    if (!token) {
-        console.log('❌ Aucun token configuré');
-        return false;
-    }
+    const token = localStorage.getItem('github_token') || GITHUB_TOKEN;
     
     try {
         console.log('🧪 Test de connexion GitHub...');
@@ -96,6 +65,7 @@ async function testGitHubConnection() {
             console.log('✅ Connexion GitHub réussie !');
             console.log(`👤 Utilisateur: ${user.login}`);
             console.log(`📧 Email: ${user.email || 'Non public'}`);
+            console.log('🎥 Prêt pour l\'upload de vidéos et images');
             return true;
         } else {
             console.log('❌ Échec de la connexion GitHub');
@@ -111,23 +81,14 @@ async function testGitHubConnection() {
 
 // Fonction pour créer un nouveau token GitHub
 function createNewGitHubToken() {
-    console.log('🔗 === CRÉATION D\'UN NOUVEAU TOKEN GITHUB ===');
+    console.log('🔗 === TOKEN GITHUB DÉJÀ CONFIGURÉ ===');
     console.log('');
-    console.log('📋 Étapes à suivre :');
-    console.log('1️⃣ Allez sur: https://github.com/settings/tokens');
-    console.log('2️⃣ Cliquez "Generate new token" → "Generate new token (classic)"');
-    console.log('3️⃣ Donnez un nom: "DarkLabbb Shop Upload"');
-    console.log('4️⃣ Sélectionnez les permissions:');
-    console.log('   ✅ repo (Full control of private repositories)');
-    console.log('   ✅ public_repo (Access public repositories)');
-    console.log('5️⃣ Cliquez "Generate token"');
-    console.log('6️⃣ COPIEZ le token (commence par ghp_)');
-    console.log('7️⃣ Utilisez: setupGitHubToken() pour le configurer');
+    console.log('✅ Token GitHub déjà configuré et prêt');
+    console.log('🎥 Prêt pour l\'upload de vidéos et images');
     console.log('');
-    console.log('⚠️ IMPORTANT: Le token ne sera affiché qu\'une seule fois !');
+    console.log('💡 Pour changer le token, modifiez la variable GITHUB_TOKEN dans le fichier');
     
-    // Ouvrir automatiquement la page GitHub
-    window.open('https://github.com/settings/tokens', '_blank');
+    return GITHUB_TOKEN;
 }
 
 // Export des fonctions
@@ -138,5 +99,7 @@ window.checkGitHubTokenStatus = checkGitHubTokenStatus;
 window.testGitHubConnection = testGitHubConnection;
 window.createNewGitHubToken = createNewGitHubToken;
 
-console.log('🔐 Fonctions de sécurité GitHub chargées');
-console.log('💡 Utilisez: setupGitHubToken() pour commencer');
+console.log('🚀 Fonctions d\'upload GitHub chargées');
+console.log('✅ Token GitHub configuré et prêt');
+console.log('🎥 Prêt pour l\'upload de vidéos et images');
+console.log('💡 Utilisez: setupGitHubToken() pour initialiser');

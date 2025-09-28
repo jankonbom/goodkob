@@ -187,3 +187,5 @@ console.log('🔍 Lister articles: listCloudinaryArticles()');
 console.log('📝 Créer template: createMigrationTemplate()');
 console.log('🔄 Mettre à jour: updateArticleUrl(id, newUrl)');
 console.log('💾 Backup guide: createLocalBackupGuide()');
+
+
