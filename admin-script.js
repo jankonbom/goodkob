@@ -167,8 +167,15 @@ function setupMediaUpload() {
         
         const mobileInput = document.getElementById('mobileMediaInput');
         if (mobileInput) {
-            mobileInput.addEventListener('change', (e) => {
+            // Supprimer les anciens événements
+            mobileInput.replaceWith(mobileInput.cloneNode(true));
+            const newMobileInput = document.getElementById('mobileMediaInput');
+            
+            newMobileInput.addEventListener('change', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 if (e.target.files && e.target.files.length > 0) {
+                    console.log('📱 Fichier sélectionné mobile:', e.target.files[0].name);
                     handleMediaFile(e.target.files[0]);
                 }
             });
@@ -192,6 +199,9 @@ function setupMediaUpload() {
 
         // Clic sur la zone - déclencher l'input file
         newUploadZone.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🖱️ Clic sur zone PC');
             newMediaInput.click();
         });
 
@@ -218,11 +228,22 @@ function setupMediaUpload() {
             }
         });
 
-        // Sélection de fichier PC
+        // Sélection de fichier PC - OPTIMISÉ
         newMediaInput.addEventListener('change', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             if (e.target.files && e.target.files.length > 0) {
-                handleMediaFile(e.target.files[0]);
+                console.log('🖱️ Fichier sélectionné PC:', e.target.files[0].name);
+                // Petit délai pour éviter les conflits
+                setTimeout(() => {
+                    handleMediaFile(e.target.files[0]);
+                }, 100);
             }
+        });
+
+        // Empêcher la propagation des événements sur l'input
+        newMediaInput.addEventListener('click', (e) => {
+            e.stopPropagation();
         });
     }
 
@@ -238,9 +259,12 @@ function setupMediaUpload() {
 }
 
 function handleMediaFile(file) {
+    console.log('📁 Traitement du fichier:', file.name, file.type, file.size);
+    
     // Vérifier le type
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
     if (!validTypes.includes(file.type)) {
+        console.error('❌ Format non supporté:', file.type);
         showNotification('Format de fichier non supporté', 'error');
         return;
     }
@@ -250,7 +274,8 @@ function handleMediaFile(file) {
     const previewImg = document.getElementById('previewImg');
     const previewVideo = document.getElementById('previewVideo');
     const uploadZone = document.getElementById('mediaUploadZone');
-    const debugPanel = document.getElementById('debugPanel');
+
+    console.log('🖼️ Affichage de l\'aperçu...');
 
     // Masquer la zone d'upload et afficher l'aperçu
     uploadZone.style.display = 'none';
@@ -260,14 +285,17 @@ function handleMediaFile(file) {
     updateDebugPanel(file);
 
     if (file.type.startsWith('image/')) {
+        console.log('🖼️ Traitement image...');
         const reader = new FileReader();
         reader.onload = (e) => {
             previewImg.src = e.target.result;
             previewImg.style.display = 'block';
             previewVideo.style.display = 'none';
+            console.log('✅ Image affichée');
         };
         reader.readAsDataURL(file);
     } else if (file.type.startsWith('video/')) {
+        console.log('🎥 Traitement vidéo...');
         const url = URL.createObjectURL(file);
         previewVideo.src = url;
         previewVideo.style.display = 'block';
@@ -280,9 +308,11 @@ function handleMediaFile(file) {
             previewVideo.setAttribute('preload', 'metadata');
             previewVideo.setAttribute('controls', 'true');
         }
+        console.log('✅ Vidéo affichée');
     }
     
     showNotification('Fichier sélectionné avec succès !', 'success');
+    console.log('✅ Fichier traité avec succès');
 }
 
 function resetMediaUpload() {
